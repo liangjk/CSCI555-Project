@@ -1,4 +1,4 @@
-### CSCI555 Project Proposal
+## CSCI555 Project Proposal
 ##### Team members: Chieh Nien, Junkai Liang
 #### Project Overview
 The evolution of distributed systems has been marked by the increasing complexity of modern applications and the need for scalable, reliable, and fault-tolerant infrastructure to support them. Distributed systems have transitioned from simple client-server architectures to highly distributed and decentralized environments, driven by the demands of web-scale applications and cloud computing.
@@ -15,7 +15,8 @@ Our evaluation will be performed on both Paxos-based version and Raft-based vers
     - Throughput without race conditions
     - Latency without race conditions
 - Availability
-    - Master/Slave server failure recovery
+    - Master server failure recovery
+    - Slave server failure recovery
     - Client failure recovery
 - Scalibity
     - Performance trend with increasing servers
@@ -23,14 +24,14 @@ Our evaluation will be performed on both Paxos-based version and Raft-based vers
 
 First, we'd like to test the performance of Chubby itself, including throughput and latency. We will make locking and unlocking operations when there are no race conditions. So that we can get the overheads of the locking service itself.
 Second, failure tolerance is the core part of distributed systems, so we want to make sure our system has high availability. We are going to emulate failures of master server, slave server, and clients, and observe the system states while recovery, respectively.
-Third, we'd like to evaluate the scalibity of our implementation. We will test from two aspects, one is to increase the number of servers; the other one is to increase the number of clients connecting to the same amount of servers.
+Third, we'd like to evaluate the scalibity of our implementation. We will test from two aspects, one is to increase the number of servers; the other one is to increase the number of clients connecting to the same amount of servers. We will analyze the performance trends of these two scenarios.
 
 
 #### MileStones
 | Week  |   Time period   | Jobs                                                                                               |
 | :---: | :-------------: | :------------------------------------------------------------------------------------------------- |
 |   1   | Feb.12 ~ Feb.18 | Fully understand Chubby / Raft / Paxos papers                                                      |
-|  2~3  | Feb.19 ~ Mar.03 | (1)Select based libraries of Raft and Paxos to implement Chubby on<br/>(2)Get familiar with Golang |
+|  2~3  | Feb.19 ~ Mar.03 | (1)Select foundational Raft and Paxos libraries for implementation<br/>(2)Get familiar with Golang |
 |  4~5  | Mar.04 ~ Mar.17 | Implement Chubby with Raft                                                                         |
 |   6   | Mar.18 ~ Mar.24 | Write project intermediate report                                                                  |
 |  7~8  | Mar.25 ~ Apr.07 | Implement Chubby with Paxos                                                                        |
