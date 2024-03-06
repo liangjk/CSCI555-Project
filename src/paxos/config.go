@@ -5,11 +5,9 @@ import (
 	crand "crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"math/big"
 	"math/rand"
 	"runtime"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -21,17 +19,9 @@ func randstring(n int) string {
 	return s[0:n]
 }
 
-func makeSeed() int64 {
-	max := big.NewInt(int64(1) << 62)
-	bigx, _ := crand.Int(crand.Reader, max)
-	x := bigx.Int64()
-	return x
-}
-
 type config struct {
 	mu        sync.Mutex
 	t         *testing.T
-	finished  int32
 	net       *labrpc.Network
 	n         int
 	pxa       []*Paxos
@@ -52,7 +42,6 @@ func make_config(t *testing.T, n int, unreliable bool) *config {
 		if runtime.NumCPU() < 2 {
 			fmt.Printf("warning: only one CPU, which may conceal locking bugs\n")
 		}
-		rand.Seed(makeSeed())
 	})
 	runtime.GOMAXPROCS(4)
 	cfg := &config{}
@@ -67,14 +56,7 @@ func make_config(t *testing.T, n int, unreliable bool) *config {
 
 	cfg.setunreliable(unreliable)
 
-	fmt.Print("\nSetting: LongDelays: ")
-	if rand.Intn(2) == 0 {
-		cfg.net.LongDelays(true)
-		fmt.Println("true")
-	} else {
-		cfg.net.LongDelays(false)
-		fmt.Println("false")
-	}
+	cfg.setLongDelay(rand.Intn(2) == 0)
 
 	for i := 0; i < cfg.n; i++ {
 		cfg.start1(i)
@@ -86,6 +68,12 @@ func make_config(t *testing.T, n int, unreliable bool) *config {
 	}
 
 	return cfg
+}
+
+func (cfg *config) setLongDelay(yes bool) {
+	fmt.Println("Setting: Long Delays: ", yes)
+	cfg.net.LongDelays(yes)
+	cfg.net.LongReordering(yes)
 }
 
 func (cfg *config) crash1(i int) {
@@ -168,13 +156,7 @@ func (cfg *config) checkTimeout() {
 	}
 }
 
-func (cfg *config) checkFinished() bool {
-	z := atomic.LoadInt32(&cfg.finished)
-	return z != 0
-}
-
 func (cfg *config) cleanup(wait time.Duration) {
-	atomic.StoreInt32(&cfg.finished, 1)
 	for i := 0; i < len(cfg.pxa); i++ {
 		if cfg.pxa[i] != nil {
 			cfg.pxa[i].Kill()
@@ -258,10 +240,6 @@ func (cfg *config) bytesTotal() int64 {
 	return cfg.net.GetTotalBytes()
 }
 
-func (cfg *config) setlongreordering(longrel bool) {
-	cfg.net.LongReordering(longrel)
-}
-
 // start a Test.
 // print the Test message.
 func (cfg *config) begin(description string) {
@@ -286,7 +264,7 @@ func (cfg *config) end() {
 		cfg.mu.Unlock()
 
 		fmt.Printf("  ... Passed --")
-		fmt.Printf("  %4.1f  %d %4d %7d\n", t, npeers, nrpc, nbytes)
+		fmt.Printf("  %4.1f  %d %4d %7d\n\n", t, npeers, nrpc, nbytes)
 	}
 }
 
