@@ -1,5 +1,6 @@
 package labrpc
 
+//
 // simulates a network that can lose requests, lose replies,
 // delay messages, and entirely disconnect particular hosts.
 //
@@ -289,7 +290,10 @@ func (rn *Network) processReq(req reqMsg) {
 	} else {
 		// simulate no reply and eventual timeout.
 		ms := 0
-		if rn.longDelays {
+		rn.mu.Lock()
+		longDelays := rn.longDelays
+		rn.mu.Unlock()
+		if longDelays {
 			// let Raft tests check that leader doesn't send
 			// RPCs synchronously.
 			ms = (rand.Int() % 7000)
