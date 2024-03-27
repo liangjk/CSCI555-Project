@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		div {
+			font-size: 11px;
+		}
+
+		img {
+			width: 80%;
+			margin-left: 10%;
+		}
+
+		li {
+			margin-bottom: 11px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="doc" class="markdown-body container-fluid comment-enabled comment-inner" data-hard-breaks="true">
+		<h1 class="raw"><span>CSCI 555 Intermediate Report</span></h1>
+		<h3 class="raw"><span>Team members: Chieh Nien, Junkai Liang</span></h3>
+		<h2 class="raw"><span>Goals</span></h2>
+		<h3 class="raw"><span>Overview</span></h3>
+		<p><span>Our goal is to implement the Chubby, a distributed lock service.</span><br>
+			<span>When Chubby's paper was published, Paxos was the pervasive consensus algorithm, so Chubby's original
+				consensus protocol was Paxos-like. However, Raft was designed in 2014 and was intended to be more
+				understandable while providing similar levels of fault tolerance. Meanwhile, Raft has an internal
+				leader, which we think may be more suitable for Chubby.</span><br>
+			<span>So, we decided to implement a simple version of the Chubby system based on the two consensus protocols
+				- Paxos and Raft and compare their performance differences. Then, we would try to figure out the reasons
+				for the differences.</span>
+		</p>
+		<h3 class="raw"><span>Changes from Proposal</span></h3>
+		<p><span>In our proposal, we planned to use some existing Paxos and Raft protocol libraries. However, after we
+				had completed the survey, we found some difficulties.</span></p>
+		<ol>
+			<li><span>Most libraries are for more than just consensus protocols. They mainly focus on applications based
+					on Paxos/Raft, and they hide the details of their basic architecture. The descriptions are
+					Paxos-like or Raft-like, so it is hard for us to find and use the pure API of their consensus
+					protocols.</span></li>
+			<li><span>In our evaluation, we want to test the availability when there are different kinds of failures.
+					Due to our limitation, we do not have multiple servers, so we had to run multiple instances on a
+					single machine. It is hard to shut down one instance and restart it back online using the existing
+					libraries. Also, when using these libraries on localhost, they get nearly no delay and no package
+					drops, which differs significantly from reality.</span></li>
+			<li><span>We want to compare the performance difference when using these two different consensus protocols,
+					but optimizations of existing libraries may import ineligible bias to our results.</span></li>
+		</ol>
+		<p><span>Therefore, we decided to change our plan for the reasons mentioned above.</span><br>
+			<span>To solve problem 1, we want to implement our own Paxos and Raft protocol and try to abstract and unify
+				the API for Chubby. Also, we will implement only the essential functions from the original papers so
+				that we can observe the differences purely caused by these two different protocols, which solves problem
+				3.</span><br>
+			<span>We use Golang for this whole project, which has built-in RPC calls. However, to solve problem 2, we
+				will not use the built-in RPC but an RPC library that can simulate the delays and package drops based on
+				settings.</span>
+		</p>
+		<h2 class="raw"><span>Progress so far</span></h2>
+		<h3 class="raw"><span>RPC Library</span></h3>
+		<p><span>After clarifying our requirements, we conducted extensive and in-depth research. We ultimately found
+				that the RPC library developed for </span><a href="https://pdos.csail.mit.edu/6.824/" target="_blank"
+				rel="noopener"><span>course 6.5840</span></a><span> perfectly aligns with our needs.</span><br>
+			<span>It was developed in Golang; it has easy-to-use APIs to make a component of the network disconnect and
+				reconnect and to make network partitions; it can simulate random delays within a specified time period
+				and simulate packet loss based on a specified probability.</span><br>
+			<span>This will significantly help our evaluation and make our results closer to the situation in reality,
+				which means several servers communicate with each other through the Internet.</span>
+		</p>
+		<h3 class="raw"><span>Paxos Protocol</span></h3>
+		<h4 class="raw"><span>Functions</span></h4>
+		<p><span>We have implemented a simple Paxos protocol based on the paper titled "Paxos Made Simple." The protocol
+				strictly follows the proposer-acceptor scheme described in the paper. It can choose a value and reach
+				consistency under different situations, including multiple proposers, less than half of the servers
+				offline, etc.</span></p>
+		<h4 class="raw"><span>Persister</span></h4>
+		<p><span>As we need to evaluate the crash and recovery of the servers, we implemented a persister for the Paxos
+				server, which can persist the needed information for the server and let it catch up when the server
+				restarts.</span></p>
+		<h4 class="raw"><span>Correctness</span></h4>
+		<p><span>To convince ourselves that the protocol functions correctly, we also built a whole test suite to verify
+				its functionality. We tested it in the unreliable network simulated by the RPC library mentioned ahead,
+				and also, under the situations where there were concurrent requests, the protocol behaved just as
+				expected. We believe it is now correct and can be used as the basic consensus protocol of our Chubby
+				system.</span></p>
+		<h4 class="raw"><span>Roadblocks</span></h4>
+		<p><span>It was hard for us to debug the distributed programs, as they produced totally different results in
+				each trial of tests. We had to implement highly granular logging to record changes in every part of the
+				system to find the problem. As we could foresee, we spent much time debugging and getting the protocol
+				correct. Inspiringly, we have finally made it.</span></p>
+		<h3 class="raw"><span>Raft Protocol</span></h3>
+		<h4 class="raw"><span>Functions</span></h4>
+		<p><span>We have also implemented a simple Raft protocol based on the paper titled "In Search of an
+				Understandable Consensus Algorithm (Extended Version)." The protocol has essential functions, including
+				electing a leader, maintaining a connection with peers, requesting a vote when the leader is down,
+				appending an entry to the log in a consistent order, log compaction, and notifying the up-level
+				application when reaching consistency. For simplicity, we did not implement some of the optimizations
+				mentioned in the paper, such as reading without contacting other peers and so on. We believe that at
+				least the correctness of the Chubby system is non-related to these features.</span></p>
+		<h4 class="raw"><span>Persister</span></h4>
+		<p><span>Similar to Paxos protocol, we need a persister to record the logs and other information to restart a
+				Raft server after it crashes. In Paxos, there is a forgetting mechanism so that the log will not ever
+				grow. So, we also implement the log compaction function in Raft to reduce the log size. We will persist
+				the snapshot and only the log entries after the checkpoint.</span></p>
+		<h4 class="raw"><span>Correctness</span></h4>
+		<p><span>We built a whole test suite for the Raft protocol as well. It tests the protocol for election
+				functionality, basic agree functionality, reaching consistency under different kinds of failures,
+				correctly handling concurrency and unreliable networks, recovery after crashing, and so on. We believe
+				it can fulfill our needs to build the Chubby system.</span></p>
+		<h4 class="raw"><span>Roadblocks</span></h4>
+		<p><span>As we mentioned before, debugging distributed programs is always a challenging story. We encountered
+				different bugs during the implementation. We need to consider all the corner cases, build the test
+				according to them, and make the protocol work as expected for these tests. It was a time-consuming job.
+				It is also worth mentioning that we conducted stress tests on our programs, and they could function
+				correctly under a workload lasting at least 24 hours.</span></p>
+		<h3 class="raw"><span>Chubby</span></h3>
+		<h4 class="raw"><span>Components we plan to implement</span></h4>
+		<p><span>Although Chubby's paper mainly describes it as a lock service, it can be used for many other purposes
+				and has many more functionalities than a simple lock service. The first job we have done is to figure
+				out which parts of the paper we are going to implement.</span></p>
+		<ul>
+			<li><span>Files, Directories, and Handles</span><br>
+				<span>Our goal is to use Chubby as a coarse-grained lock service and only focus on the lock acquisition
+					and release performance.</span><br>
+				<span>In paper, Chubby exports file system-like interfaces that support both files and directories. In a
+					simple locking service, we see locks as files, and we only need to provide a map between path names
+					and actual files, so we choose only to support files, which means the path name is seen just as part
+					of the file name. One of the critical uses of the directory is that a node inherits access control
+					lists (ACLs) from its parent directory by default. Since we assume all clients are under control and
+					do not need access control, we will not implement the ACL part.</span><br>
+				<span>We keep the design of the handles. However, it is more like an abstraction rather than a specific
+					implementation. We will record the handle's information on each client.</span>
+			</li>
+			<li><span>Locks and Sequencers</span><br>
+				<span>We are going to take most of the designs described in Section 2.4 of the paper, including
+					sequencer and lock-delay unless we only support exclusive locks.</span>
+			</li>
+			<li><span>Events</span><br>
+				<span>In the paper's design, Chubby clients may subscribe to a range of events, which greatly helps
+					programming. However, again, we want to focus only on the locking service, so we will not support
+					any of the events.</span>
+			</li>
+			<li><span>Caching</span><br>
+				<span>In Chubby, clients can cache file data and meta-data in memory. However, in our evaluation, we
+					want to figure out the differences between Paxos and Raft protocols. Caching data on the client's
+					side will reduce the communication between clients and servers and among servers, mitigating the
+					performance impact of underlying protocols. So, we decide not to implement caching.</span>
+			</li>
+			<li><span>Sessions, KeepAlives and Fail-overs</span><br>
+				<span>This is a significant part of the distributed system's correctness so that we will follow the
+					paper's design of sessions and keepalive RPCs. The performance of failovers is also a significant
+					part of our evaluation.</span>
+			</li>
+			<li><span>Backup and Mirroring</span><br>
+				<span>Backup and mirroring are important in a productive system, but they are separate from our test.
+					So, we will not implement this part.</span>
+			</li>
+		</ul>
+		<h4 class="raw"><span>System Structure</span></h4>
+		<p><span>Chubby has two main components that communicate via RPC: a server and a client library. A Chubby cell
+				consists of five servers known as replicas. In our current implementation, servers will run on our local
+				machine and listen on different ports. In the original system structure, the client contacts the DNS to
+				get the listed Chubby replicas. However, this function is not necessary for our evaluation; we assume
+				clients already know the addresses of all possible servers.</span></p>
+		<p><span>Upon initialization, a Chubby client performs the following steps:</span></p>
+		<ul>
+			<li><span>Client read the server list to know all the Chubby replicas</span></li>
+			<li><span>Client calls any server via RPC</span></li>
+			<li><span>If that replica is not the master, it will return the address of the master</span></li>
+			<li><span>Once the connection succeeds, both the server and client create a new session.</span></li>
+			<li><span>Maintain session via KeepAlive call</span></li>
+		</ul>
+		<p><span>While a Chubby server performs these steps:</span></p>
+		<ul>
+			<li><span>Open a TCP server at the given port</span></li>
+			<li><span>A master is chosen among all replicas using Raft or Paxos</span></li>
+			<li><span>All replicas become aware of the master and keep consist via Raft or Paxos</span></li>
+		</ul>
+		<p><img src="https://hackmd.io/_uploads/r197nhlk0.png" alt="Chubby" loading="lazy"></p>
+		<h4 class="raw"><span>Locks and Files</span></h4>
+		<p><span>The state machine of our system is simply a map between the path name and file meta-data. We use the
+				built-in map in Golang, with the path and file names as the key and the pointer to the file struct as
+				the value. This simplifies the path looking up, and since there will be only a few pairs in the map, the
+				performance of the built-in map should be sufficient for our evaluation.</span></p>
+		<h4 class="raw"><span>Sessions</span></h4>
+		<p><span>The functionalities of the "2.8 Sessions and Keepalives" section in the paper have all been
+				implemented. A client requests a new session on first contacting the master. Sessions have associated
+				leases guaranteed by the master. For each client session structure, it maintains lease length, master
+				address, start time, and locks, while for each server session, it maintains lease length, start time,
+				client ID, and locks.</span></p>
+		<h4 class="raw"><span>KeepAlive</span></h4>
+		<p><span>KeepAlive requests are used to maintain the session (extend the corresponding lease time). If the
+				client's session leases timeout, it enters the jeopardy state. During the grace period, the client keeps
+				sending RPC calls to another server in order to connect to a new master.</span></p>
+		<p><img src="https://hackmd.io/_uploads/SknIkAeJR.png" alt="Screenshot 2024-03-26 at 3.42.07 PM" loading="lazy">
+		</p>
+		<h2 class="raw"><span>Plan of remaining time</span></h2>
+		<p><span>Since we changed our minds about implementing consensus protocols on our own, we have spent more time
+				than planned here. However, we also get some benefits. We can abstract similar interfaces of the Paxos
+				and Raft layer, so we only need to rewrite a tiny part of the Chubby layer to make it work for the other
+				protocol.</span><br>
+			<span>For the remaining time, we plan to finish implementing the system in one week, which leaves about
+				three weeks to conduct the evaluation and write the final report.</span>
+		</p>
+	</div>
+
+</body>
+
+</html>
