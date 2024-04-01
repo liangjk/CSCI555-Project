@@ -2,7 +2,7 @@ package paxos
 
 func (px *Paxos) Decide(args *DecideArgs, reply *DecideReply) {
 	px.mu.Lock()
-	inst := px.getInstanceL(args.Seq)
+	inst := px.getInstanceL(args.Seq, false)
 	if inst == nil {
 		px.mu.Unlock()
 		return
@@ -13,7 +13,7 @@ func (px *Paxos) Decide(args *DecideArgs, reply *DecideReply) {
 
 func (px *Paxos) Accept(args *AcceptArgs, reply *AcceptReply) {
 	px.mu.Lock()
-	inst := px.getInstanceL(args.Seq)
+	inst := px.getInstanceL(args.Seq, true)
 	if inst == nil {
 		px.mu.Unlock()
 		reply.Reply = Fail
@@ -35,7 +35,7 @@ func (px *Paxos) Accept(args *AcceptArgs, reply *AcceptReply) {
 
 func (px *Paxos) Prepare(args *PrepareArgs, reply *PrepareReply) {
 	px.mu.Lock()
-	inst := px.getInstanceL(args.Seq)
+	inst := px.getInstanceL(args.Seq, true)
 	if inst == nil {
 		px.mu.Unlock()
 		reply.Code = LateRequest

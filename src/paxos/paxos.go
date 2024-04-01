@@ -54,13 +54,16 @@ func (px *Paxos) decide(seq int, inst *Instance, value interface{}) {
 	px.mu.Unlock()
 }
 
-func (px *Paxos) getInstanceL(seq int) *Instance {
+func (px *Paxos) getInstanceL(seq int, propose bool) *Instance {
 	if seq < px.startIndex {
 		return nil
 	}
-	for i := len(px.instances); px.startIndex+i <= seq; i++ {
+	for i := len(px.instances) + px.startIndex; i <= seq; i++ {
 		newInst := &Instance{status: Pending}
 		px.instances = append(px.instances, newInst)
+		if i < seq || propose {
+			go px.proposer(i, nil, newInst)
+		}
 	}
 	return px.instances[seq-px.startIndex]
 }
@@ -73,7 +76,7 @@ func (px *Paxos) getInstanceL(seq int) *Instance {
 func (px *Paxos) Start(seq int, v interface{}) {
 	px.mu.Lock()
 	defer px.mu.Unlock()
-	inst := px.getInstanceL(seq)
+	inst := px.getInstanceL(seq, false)
 	if inst != nil {
 		go px.proposer(seq, v, inst)
 	}
@@ -115,7 +118,7 @@ func (px *Paxos) Min() int {
 // it should not contact other Paxos peers.
 func (px *Paxos) Status(seq int) (Fate, interface{}) {
 	px.mu.Lock()
-	inst := px.getInstanceL(seq)
+	inst := px.getInstanceL(seq, true)
 	px.mu.Unlock()
 	if inst == nil {
 		return Forgotten, nil

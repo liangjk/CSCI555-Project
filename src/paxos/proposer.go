@@ -76,9 +76,6 @@ func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 				break
 			}
 		}
-		if v == nil {
-			return
-		}
 		if prepareOk {
 			if value == nil {
 				value = v

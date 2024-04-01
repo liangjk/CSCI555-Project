@@ -48,7 +48,7 @@ func (px *Paxos) ticker() {
 				done = px.startIndex + len(px.instances)
 			}
 			for i := px.startIndex; i < done; i++ {
-				inst := px.getInstanceL(i)
+				inst := px.getInstanceL(i, false)
 				go px.decide(i, inst, nil)
 			}
 			instances := px.instances[done-px.startIndex:]
@@ -56,17 +56,11 @@ func (px *Paxos) ticker() {
 			copy(px.instances, instances)
 			px.startIndex = done
 			px.persistL()
-			for i := px.startIndex; i <= decided; i++ {
-				inst := px.getInstanceL(i)
-				go px.proposer(i, nil, inst)
-			}
+			px.getInstanceL(decided, true)
 			px.mu.Unlock()
 		} else if decided > myDecided {
 			px.mu.Lock()
-			for i := px.startIndex; i <= decided; i++ {
-				inst := px.getInstanceL(i)
-				go px.proposer(i, nil, inst)
-			}
+			px.getInstanceL(decided, true)
 			px.mu.Unlock()
 		}
 
