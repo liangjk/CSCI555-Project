@@ -2,6 +2,7 @@ package paxos
 
 import (
 	"CSCI555Project/labrpc"
+	"log"
 	"sync"
 	"sync/atomic"
 )
@@ -154,4 +155,12 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister) *Paxos {
 	go px.ticker()
 
 	return px
+}
+
+const Debug = false
+
+func DPrintf(format string, a ...interface{}) {
+	if Debug {
+		log.Printf(format, a...)
+	}
 }

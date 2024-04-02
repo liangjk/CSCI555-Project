@@ -1,6 +1,9 @@
 package raftserver
 
-import "time"
+import (
+	"CSCI555Project/session"
+	"time"
+)
 
 const TickerMs = 1000
 
@@ -39,16 +42,14 @@ func (srv *RaftServer) ticker() {
 	}
 }
 
-const GracePeriod = DefaultLease / 2
-
 func (srv *RaftServer) checkLeaseL() {
 	now := time.Now().Unix()
 	for path, file := range srv.files {
 		if file.Sessid == -1 {
 			continue
 		}
-		if file.Lease+GracePeriod > now {
-			op := Op{Revoke, path, file.Sessid, -1, file.Lease}
+		if file.Lease+session.GracePeriod < now {
+			op := session.Op{Code: session.Revoke, Path: path, Sessid: file.Sessid, Lease: file.Lease}
 			go srv.rf.Start(op)
 		}
 	}

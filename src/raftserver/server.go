@@ -9,27 +9,6 @@ import (
 	"time"
 )
 
-type Opcode int
-
-const (
-	Create Opcode = iota + 1
-	Remove
-	Acquire
-	Release
-	Extend
-	Revoke
-)
-
-const DefaultLease = 12
-
-type Op struct {
-	Code   Opcode
-	Path   string
-	Sessid int32
-	Seq    int64
-	Lease  int64
-}
-
 type RaftServer struct {
 	mu      sync.Mutex
 	me      int
@@ -55,7 +34,7 @@ func (srv *RaftServer) getWaitL(sessid int32) *sync.Cond {
 	return cond
 }
 
-func (srv *RaftServer) operateL(op *Op) bool {
+func (srv *RaftServer) operateL(op *session.Op) bool {
 	_, term, isLeader := srv.rf.Start(*op)
 	if !isLeader {
 		return false
@@ -84,7 +63,7 @@ func (srv *RaftServer) Create(args *session.PathArgs, reply *session.ErrReply) {
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &Op{Create, args.Path, args.Sessid, args.Seq, 0}
+	op := &session.Op{Code: session.Create, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq}
 	if srv.operateL(op) {
 		reply.Result = session.OK
 	} else {
@@ -99,7 +78,7 @@ func (srv *RaftServer) Remove(args *session.PathArgs, reply *session.ErrReply) {
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &Op{Remove, args.Path, args.Sessid, args.Seq, 0}
+	op := &session.Op{Code: session.Remove, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq}
 	if srv.operateL(op) {
 		if _, ok := srv.files[args.Path]; ok {
 			reply.Result = session.LockBusy
@@ -118,7 +97,7 @@ func (srv *RaftServer) Acquire(args *session.PathArgs, reply *session.ErrReply) 
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &Op{Acquire, args.Path, args.Sessid, args.Seq, time.Now().Add(time.Second * DefaultLease).Unix()}
+	op := &session.Op{Code: session.Acquire, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq, Lease: time.Now().Add(time.Second * session.DefaultLease).Unix()}
 	if srv.operateL(op) {
 		if file, ok := srv.files[args.Path]; !ok {
 			reply.Result = session.LockNotExist
@@ -140,7 +119,7 @@ func (srv *RaftServer) Release(args *session.PathArgs, reply *session.ErrReply) 
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &Op{Release, args.Path, args.Sessid, args.Seq, 0}
+	op := &session.Op{Code: session.Release, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq}
 	if srv.operateL(op) {
 		reply.Result = session.OK
 	} else {
@@ -155,7 +134,7 @@ func (srv *RaftServer) Extend(args *session.PathArgs, reply *session.ErrReply) {
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &Op{Extend, args.Path, args.Sessid, args.Seq, time.Now().Add(time.Second * DefaultLease).Unix()}
+	op := &session.Op{Code: session.Extend, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq, Lease: time.Now().Add(time.Second * session.DefaultLease).Unix()}
 	if srv.operateL(op) {
 		if file, ok := srv.files[args.Path]; !ok {
 			reply.Result = session.LockNotExist
@@ -171,7 +150,7 @@ func (srv *RaftServer) Extend(args *session.PathArgs, reply *session.ErrReply) {
 }
 
 func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister) *RaftServer {
-	labgob.Register(Op{})
+	labgob.Register(session.Op{})
 
 	srv := new(RaftServer)
 	srv.me = me

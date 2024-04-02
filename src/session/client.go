@@ -15,25 +15,24 @@ const (
 )
 
 type Session struct {
-	mu sync.Mutex
-
 	servers  []*labrpc.ClientEnd
 	sessid   int32
-	seq      int64
+	seq      [2]int64
 	protocol string
 	leader   int
 
-	alive  map[string]int64
+	mu    sync.Mutex
+	alive map[string]int64
+
 	doneCh chan bool
 }
 
-var assignedId int32 = -1
+var assignedId int32 = -2
 
 func Init(servers []*labrpc.ClientEnd, ptl Protocol) *Session {
 	sess := new(Session)
 	sess.servers = servers
-	sess.sessid = atomic.AddInt32(&assignedId, 1)
-	sess.seq = 0
+	sess.sessid = atomic.AddInt32(&assignedId, 2)
 	if ptl == Raft {
 		sess.protocol = "RaftServer."
 	} else {
@@ -46,60 +45,15 @@ func Init(servers []*labrpc.ClientEnd, ptl Protocol) *Session {
 	return sess
 }
 
-const (
-	RefreshRate      = 1000
-	RefreshThreshold = 2
-)
-
-func (sess *Session) KeepAlive() {
-	const d = time.Millisecond * RefreshRate
-	function := sess.protocol + "Extend"
-	timer := time.NewTimer(d)
-	for {
-		select {
-		case <-sess.doneCh:
-			timer.Stop()
-			sess.mu.Lock()
-			for path := range sess.alive {
-				sess.Release(path)
-			}
-			sess.mu.Unlock()
-			return
-		case <-timer.C:
-		}
-		sess.mu.Lock()
-		var expired []string
-		for path, lease := range sess.alive {
-		retryExtend:
-			if time.Now().Unix() >= lease-RefreshThreshold {
-				reply := sess.RequestL(path, function)
-				switch reply.Result {
-				case OK:
-					sess.alive[path] = reply.Lease
-				case RepeatedRequest:
-					goto retryExtend
-				default:
-					expired = append(expired, path)
-				}
-			}
-		}
-		for _, path := range expired {
-			delete(sess.alive, path)
-		}
-		sess.mu.Unlock()
-		timer.Reset(d)
-	}
-}
-
 func (sess *Session) Close() {
 	close(sess.doneCh)
 }
 
 const retryWait = 1000
 
-func (sess *Session) RequestL(path, function string) *ErrReply {
-	sess.seq++
-	args := PathArgs{path, sess.sessid, sess.seq}
+func (sess *Session) Request(rid int32, path, function string) *ErrReply {
+	sess.seq[rid]++
+	args := PathArgs{path, sess.sessid + rid, sess.seq[rid]}
 	sCnt := len(sess.servers)
 	retry := sCnt
 	for {
@@ -127,45 +81,109 @@ func (sess *Session) RequestL(path, function string) *ErrReply {
 }
 
 func (sess *Session) Create(path string) Err {
-	sess.mu.Lock()
-	defer sess.mu.Unlock()
-	return sess.RequestL(path, sess.protocol+"Create").Result
+	return sess.Request(0, path, sess.protocol+"Create").Result
 }
 
 func (sess *Session) Remove(path string) Err {
-	sess.mu.Lock()
-	defer sess.mu.Unlock()
-	return sess.RequestL(path, sess.protocol+"Remove").Result
+	return sess.Request(0, path, sess.protocol+"Remove").Result
 }
 
 func (sess *Session) Acquire(path string) Err {
 	sess.mu.Lock()
-	defer sess.mu.Unlock()
 	if _, ok := sess.alive[path]; ok {
+		sess.mu.Unlock()
 		return LockReacquire
 	}
-	reply := sess.RequestL(path, sess.protocol+"Acquire")
+	sess.mu.Unlock()
+	reply := sess.Request(0, path, sess.protocol+"Acquire")
 	if reply.Result == OK {
+		sess.mu.Lock()
 		sess.alive[path] = reply.Lease
+		sess.mu.Unlock()
 	}
 	return reply.Result
 }
 
 func (sess *Session) Release(path string) Err {
 	sess.mu.Lock()
-	defer sess.mu.Unlock()
 	if _, ok := sess.alive[path]; !ok {
+		sess.mu.Unlock()
 		return LockNotAcquired
 	}
-	defer delete(sess.alive, path)
-	return sess.RequestL(path, sess.protocol+"Release").Result
+	delete(sess.alive, path)
+	sess.mu.Unlock()
+	return sess.Request(0, path, sess.protocol+"Release").Result
 }
 
 func (sess *Session) IsHolding(path string) bool {
 	sess.mu.Lock()
 	defer sess.mu.Unlock()
-	if lease, ok := sess.alive[path]; ok && time.Now().Unix() <= lease {
-		return true
+	for {
+		if lease, ok := sess.alive[path]; ok {
+			now := time.Now().Unix()
+			if now <= lease {
+				return true
+			} else if now > lease+GracePeriod {
+				delete(sess.alive, path)
+				return false
+			}
+		} else {
+			return false
+		}
+		sess.mu.Unlock()
+		time.Sleep(time.Millisecond * RefreshRate)
+		sess.mu.Lock()
 	}
-	return false
+}
+
+const (
+	RefreshRate      = 1000
+	RefreshThreshold = 2
+)
+
+func (sess *Session) KeepAlive() {
+	const d = time.Millisecond * RefreshRate
+	function := sess.protocol + "Extend"
+	timer := time.NewTimer(d)
+	for {
+		select {
+		case <-sess.doneCh:
+			timer.Stop()
+			sess.mu.Lock()
+			for path := range sess.alive {
+				sess.Request(1, path, sess.protocol+"Release")
+			}
+			sess.mu.Unlock()
+			return
+		case <-timer.C:
+		}
+		extend := make([]string, 0)
+		sess.mu.Lock()
+		now := time.Now().Unix()
+		for path, lease := range sess.alive {
+			if now >= lease-RefreshThreshold {
+				extend = append(extend, path)
+			}
+		}
+		sess.mu.Unlock()
+		for _, path := range extend {
+		RetryExtend:
+			reply := sess.Request(1, path, function)
+			switch reply.Result {
+			case OK:
+				sess.mu.Lock()
+				if _, ok := sess.alive[path]; ok {
+					sess.alive[path] = reply.Lease
+				}
+				sess.mu.Unlock()
+			case RepeatedRequest:
+				goto RetryExtend
+			default:
+				sess.mu.Lock()
+				delete(sess.alive, path)
+				sess.mu.Unlock()
+			}
+		}
+		timer.Reset(d)
+	}
 }
