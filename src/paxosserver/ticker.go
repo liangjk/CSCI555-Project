@@ -30,26 +30,23 @@ func (srv *PaxosServer) checkLease() {
 			continue
 		}
 		if file.Lease+session.GracePeriod < now {
-			go srv.revoke(path)
+			op := &session.Op{Code: session.Revoke, Path: path, Sessid: file.Sessid, Lease: file.Lease}
+			go srv.revoke(path, file, op)
 		}
 	}
 	srv.mu.Unlock()
 }
 
-func (srv *PaxosServer) revoke(path string) {
-	srv.mu.Lock()
-	file := srv.files[path]
-	op := session.Op{Code: session.Revoke, Path: path, Sessid: file.Sessid, Lease: file.Lease}
-	threshold := time.Millisecond * MaxWaitMs
+func (srv *PaxosServer) revoke(path string, file *session.File, op *session.Op) {
+	const threshold = time.Millisecond * MaxWaitMs
 	ms := time.Millisecond * MinWaitMs
 	pxseq := -1
+	timer := time.NewTimer(ms)
 	for {
 		if srv.applied > pxseq {
 			pxseq := srv.px.Max() + 1
-			srv.px.Start(pxseq, op)
+			srv.px.Start(pxseq, *op)
 		}
-		srv.mu.Unlock()
-		timer := time.NewTimer(ms)
 		select {
 		case <-srv.doneCh:
 			timer.Stop()
@@ -58,9 +55,11 @@ func (srv *PaxosServer) revoke(path string) {
 		}
 		srv.mu.Lock()
 		if nfile := srv.files[path]; nfile == file && nfile.Sessid == op.Sessid && nfile.Lease == op.Lease {
+			srv.mu.Unlock()
 			if ms < threshold {
 				ms *= 2
 			}
+			timer.Reset(ms)
 		} else {
 			srv.mu.Unlock()
 			return

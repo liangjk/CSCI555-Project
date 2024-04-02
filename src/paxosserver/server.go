@@ -29,7 +29,7 @@ const (
 )
 
 func (srv *PaxosServer) operateL(op *session.Op) {
-	threshold := time.Millisecond * MaxWaitMs
+	const threshold = time.Millisecond * MaxWaitMs
 	ms := time.Millisecond * MinWaitMs
 	pxseq := -1
 	for {
