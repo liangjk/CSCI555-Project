@@ -138,7 +138,7 @@ func (srv *RaftServer) Extend(args *session.PathArgs, reply *session.ErrReply) {
 	if srv.operateL(op) {
 		if file, ok := srv.files[args.Path]; !ok {
 			reply.Result = session.LockNotExist
-		} else if file.Sessid != args.Sessid {
+		} else if file.Sessid != args.Sessid^1 {
 			reply.Result = session.LockNotAcquired
 		} else {
 			reply.Result = session.OK

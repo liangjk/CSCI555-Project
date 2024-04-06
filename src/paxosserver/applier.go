@@ -101,7 +101,7 @@ func (srv *PaxosServer) applyRelease(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
-	if file, ok := srv.files[op.Path]; ok && file.Sessid == op.Sessid {
+	if file, ok := srv.files[op.Path]; ok && (file.Sessid == op.Sessid || file.Sessid == op.Sessid^1) {
 		file.Sessid = -1
 	}
 	srv.updSessL(op.Sessid, op.Seq)
@@ -113,7 +113,7 @@ func (srv *PaxosServer) applyExtend(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
-	if file, ok := srv.files[op.Path]; ok && file.Sessid == op.Sessid {
+	if file, ok := srv.files[op.Path]; ok && file.Sessid == op.Sessid^1 {
 		file.Lease = op.Lease
 	}
 	srv.updSessL(op.Sessid, op.Seq)
