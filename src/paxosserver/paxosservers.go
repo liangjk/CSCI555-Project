@@ -52,3 +52,7 @@ func (srvs *PaxosServers) Start(ends []*labrpc.ClientEnd, i int) {
 func (srvs *PaxosServers) Service(i int) (*labrpc.Service, *labrpc.Service) {
 	return labrpc.MakeService(srvs.servers[i]), labrpc.MakeService(srvs.servers[i].px)
 }
+
+func (srvs *PaxosServers) Leader() int {
+	return 0
+}

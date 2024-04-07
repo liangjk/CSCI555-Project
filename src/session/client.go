@@ -59,8 +59,13 @@ func (sess *Session) Request(rid int32, path, function string) *ErrReply {
 	for {
 		reply := ErrReply{}
 		ok := sess.servers[sess.leader].Call(function, &args, &reply)
-		if ok && reply.Result != WrongLeader {
-			return &reply
+		if ok {
+			if reply.Result == RepeatedRequest {
+				return sess.Request(rid, path, function)
+			}
+			if reply.Result != WrongLeader {
+				return &reply
+			}
 		}
 		sess.leader++
 		if sess.leader >= sCnt {

@@ -26,6 +26,7 @@ type Servers interface {
 	Shutdown(int, *sync.Mutex)
 	Start([]*labrpc.ClientEnd, int)
 	Service(int) (*labrpc.Service, *labrpc.Service)
+	Leader() int
 }
 
 type Config struct {
@@ -267,6 +268,12 @@ func (cfg *Config) StartServer(i int) {
 	srv.AddService(csvc)
 	srv.AddService(psvc)
 	cfg.net.AddServer(i, srv)
+}
+
+func (cfg *Config) Leader() int {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+	return cfg.servers.Leader()
 }
 
 // start a Test.

@@ -88,9 +88,13 @@ func (srv *PaxosServer) applyAcquire(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
-	if file, ok := srv.files[op.Path]; ok && file.Sessid == -1 {
-		file.Sessid = op.Sessid
-		file.Lease = op.Lease
+	if file, ok := srv.files[op.Path]; ok {
+		if file.Sessid == -1 {
+			file.Sessid = op.Sessid
+			file.Lease = op.Lease
+		} else if file.Sessid == op.Sessid && file.Lease < op.Lease {
+			file.Lease = op.Lease
+		}
 	}
 	srv.updSessL(op.Sessid, op.Seq)
 }

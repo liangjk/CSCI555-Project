@@ -52,3 +52,15 @@ func (srvs *RaftServers) Start(ends []*labrpc.ClientEnd, i int) {
 func (srvs *RaftServers) Service(i int) (*labrpc.Service, *labrpc.Service) {
 	return labrpc.MakeService(srvs.servers[i]), labrpc.MakeService(srvs.servers[i].rf)
 }
+
+func (srvs *RaftServers) Leader() int {
+	for i, srv := range srvs.servers {
+		if srv != nil {
+			_, isLeader := srv.rf.GetState()
+			if isLeader {
+				return i
+			}
+		}
+	}
+	return -1
+}

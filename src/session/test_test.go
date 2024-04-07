@@ -42,6 +42,7 @@ func TestBasic(t *testing.T) {
 
 	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
 	defer pxcfg.Cleanup()
+
 	pxcfg.begin("Test: Basic Paxos 5 Servers")
 	basic(pxcfg)
 	pxcfg.end()
@@ -93,6 +94,7 @@ func TestContend(t *testing.T) {
 
 	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
 	defer pxcfg.Cleanup()
+
 	pxcfg.begin("Test: Contend Paxos 5 Servers")
 	contend(pxcfg)
 	pxcfg.end()
@@ -115,7 +117,14 @@ func concurrent(cfg *Config) {
 				fail[num] = true
 				return
 			}
-			time.Sleep(time.Millisecond * 100)
+		}()
+	}
+	wg.Wait()
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		num := i
+		go func() {
+			defer wg.Done()
 			if !cfg.check(sess[num].Create(path), []session.Err{session.OK}) {
 				fail[num] = true
 				return
@@ -125,7 +134,14 @@ func concurrent(cfg *Config) {
 				return
 			}
 			res[num] = sess[num].IsHolding(path)
-			time.Sleep(time.Millisecond * 100)
+		}()
+	}
+	wg.Wait()
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		num := i
+		go func() {
+			defer wg.Done()
 			if !cfg.check(sess[num].Release(path), []session.Err{session.OK, session.LockNotAcquired}) {
 				fail[num] = true
 				return
@@ -162,6 +178,7 @@ func TestConcurrent(t *testing.T) {
 
 	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
 	defer pxcfg.Cleanup()
+
 	pxcfg.begin("Test: Concurrent Paxos 5 Servers")
 	concurrent(pxcfg)
 	pxcfg.end()
@@ -194,7 +211,30 @@ func TestLease(t *testing.T) {
 
 	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
 	defer pxcfg.Cleanup()
+
 	pxcfg.begin("Test: Lease Expire Paxos 5 Servers")
+	leaseexpire(pxcfg)
+	pxcfg.end()
+}
+
+func TestUnreliable(t *testing.T) {
+	rfcfg := MakeConfig(t, 5, true, true, session.Raft)
+	defer rfcfg.Cleanup()
+
+	rfcfg.begin("Test: Unreliable and LongDelay Raft 5 Servers")
+	basic(rfcfg)
+	contend(rfcfg)
+	concurrent(rfcfg)
+	leaseexpire(rfcfg)
+	rfcfg.end()
+
+	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
+	defer pxcfg.Cleanup()
+
+	pxcfg.begin("Test: Unreliable and LongDelay Paxos 5 Servers")
+	basic(pxcfg)
+	contend(pxcfg)
+	concurrent(pxcfg)
 	leaseexpire(pxcfg)
 	pxcfg.end()
 }
