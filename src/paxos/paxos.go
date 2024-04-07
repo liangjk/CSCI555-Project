@@ -17,6 +17,7 @@ const (
 	Decided   Fate = iota + 1
 	Pending        // not yet decided.
 	Forgotten      // decided but forgotten.
+	Exceeded       // not yet started
 )
 
 type Instance struct {
@@ -119,7 +120,11 @@ func (px *Paxos) Min() int {
 // it should not contact other Paxos peers.
 func (px *Paxos) Status(seq int) (Fate, interface{}) {
 	px.mu.Lock()
-	inst := px.getInstanceL(seq, true)
+	if seq >= len(px.instances)+px.startIndex {
+		px.mu.Unlock()
+		return Exceeded, nil
+	}
+	inst := px.getInstanceL(seq, false)
 	px.mu.Unlock()
 	if inst == nil {
 		return Forgotten, nil

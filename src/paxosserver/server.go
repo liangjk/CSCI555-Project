@@ -25,7 +25,7 @@ type PaxosServer struct {
 
 const (
 	MinWaitMs = 10
-	MaxWaitMs = 1000
+	MaxWaitMs = 200
 )
 
 func (srv *PaxosServer) operateL(op *session.Op) {
