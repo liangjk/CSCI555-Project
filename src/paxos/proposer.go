@@ -6,17 +6,18 @@ import (
 )
 
 const (
-	retryIntv  = 1000
+	shortIntv  = 500
+	longIntv   = 2500
 	tickerIntv = 2000
 )
 
-func waitBeforeRetry() {
-	time.Sleep(time.Duration(retryIntv+rand.Int63()%retryIntv) * time.Millisecond)
+func waitBeforeRetry(intvms int64) {
+	time.Sleep(time.Duration(intvms+rand.Int63()%intvms) * time.Millisecond)
 }
 
 func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 	if v == nil {
-		waitBeforeRetry()
+		waitBeforeRetry(longIntv)
 	}
 	for !px.isdead() {
 		inst.mu.Lock()
@@ -45,6 +46,7 @@ func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 		}
 		votes := 1
 		prepareOk := false
+		badNetwork := false
 	PrepareLoop:
 		for i := 1; i < numServers; i++ {
 			reply := <-prepareReplyCh
@@ -70,9 +72,11 @@ func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 				inst.mu.Unlock()
 				break PrepareLoop
 			case LateRequest:
+				DPrintf("Another server has deleted pending instance %v\n", seq)
 				break PrepareLoop
 			}
 			if (i+1-votes)*2 >= numServers {
+				badNetwork = true
 				break
 			}
 		}
@@ -87,15 +91,18 @@ func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 			}
 			if inst.prepare != prepare {
 				inst.mu.Unlock()
-				waitBeforeRetry()
+				waitBeforeRetry(longIntv)
 				continue
 			}
 			inst.accept = prepare
 			inst.value = value
 			px.persistInstanceL(seq, inst)
 			inst.mu.Unlock()
+		} else if badNetwork {
+			waitBeforeRetry(shortIntv)
+			continue
 		} else {
-			waitBeforeRetry()
+			waitBeforeRetry(longIntv)
 			continue
 		}
 
@@ -148,7 +155,9 @@ func (px *Paxos) proposer(seq int, v interface{}, inst *Instance) {
 				inst.prepare = replyPrepare
 			}
 			inst.mu.Unlock()
+			waitBeforeRetry(longIntv)
+		} else {
+			waitBeforeRetry(shortIntv)
 		}
-		waitBeforeRetry()
 	}
 }

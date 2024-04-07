@@ -4,19 +4,14 @@ import "time"
 
 func (px *Paxos) GetDone(args *DoneArgs, reply *DoneReply) {
 	px.mu.Lock()
-	reply.Done = px.done
+	reply.Done = px.done[px.me]
 	reply.Decided = px.decided
+	reply.SrvId = px.me
 	px.mu.Unlock()
 }
 
 func (px *Paxos) ticker() {
 	for !px.isdead() {
-		px.mu.Lock()
-		done := px.done
-		decided := px.decided
-		startIndex := px.startIndex
-		myDecided := px.decided
-		px.mu.Unlock()
 		nextWakeup := time.Now().Add(tickerIntv * time.Millisecond)
 
 		numServers := len(px.peers)
@@ -24,7 +19,7 @@ func (px *Paxos) ticker() {
 		args := DoneArgs{}
 		for i, peer := range px.peers {
 			if i != px.me {
-				reply := DoneReply{}
+				reply := DoneReply{SrvId: -1}
 				peer := peer
 				go func() {
 					peer.Call("Paxos.GetDone", &args, &reply)
@@ -32,18 +27,29 @@ func (px *Paxos) ticker() {
 				}()
 			}
 		}
+		replyDone := make([]int, numServers)
+		replyDecided := -1
 		for i := 1; i < numServers; i++ {
 			reply := <-replyCh
-			if reply.Done < done {
-				done = reply.Done
+			if reply.Decided > replyDecided {
+				replyDecided = reply.Decided
 			}
-			if reply.Decided > decided {
-				decided = reply.Decided
+			if reply.SrvId >= 0 {
+				replyDone[reply.SrvId] = reply.Done
 			}
 		}
-
-		if done > startIndex {
-			px.mu.Lock()
+		
+		px.mu.Lock()
+		done := px.done[px.me]
+		for i, rd := range replyDone {
+			if rd > px.done[i] {
+				px.done[i] = rd
+			}
+			if px.done[i] < done {
+				done = px.done[i]
+			}
+		}
+		if done > px.startIndex {
 			if done > px.startIndex+len(px.instances) {
 				done = px.startIndex + len(px.instances)
 			}
@@ -56,13 +62,11 @@ func (px *Paxos) ticker() {
 			copy(px.instances, instances)
 			px.startIndex = done
 			px.persistL()
-			px.getInstanceL(decided, true)
-			px.mu.Unlock()
-		} else if decided > myDecided {
-			px.mu.Lock()
-			px.getInstanceL(decided, true)
-			px.mu.Unlock()
 		}
+		if replyDecided > px.decided {
+			px.getInstanceL(replyDecided, true)
+		}
+		px.mu.Unlock()
 
 		time.Sleep(time.Until(nextWakeup))
 	}

@@ -77,13 +77,15 @@ func (psi *PersistInstance) read() *Instance {
 func (px *Paxos) readPersist(ps *Persister) {
 	startIndex, instances := ps.ReadPaxosState()
 	px.startIndex = startIndex
-	px.done = startIndex
-	px.decided = startIndex
+	px.done[px.me] = startIndex
+	px.decided = startIndex - 1
 	for i, pinst := range instances {
 		inst := pinst.read()
 		px.instances = append(px.instances, inst)
 		if inst.status == Decided {
 			px.decided = startIndex + i
+		} else {
+			go px.proposer(startIndex+i, nil, inst)
 		}
 	}
 }

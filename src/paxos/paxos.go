@@ -34,9 +34,10 @@ type Paxos struct {
 	persister *Persister
 	dead      int32
 
-	instances     []*Instance
-	startIndex    int
-	done, decided int
+	instances  []*Instance
+	startIndex int
+	done       []int
+	decided    int
 }
 
 func (px *Paxos) decide(seq int, inst *Instance, value interface{}) {
@@ -88,8 +89,8 @@ func (px *Paxos) Start(seq int, v interface{}) {
 // all instances <= seq.
 func (px *Paxos) Done(seq int) {
 	px.mu.Lock()
-	if seq >= px.done {
-		px.done = seq + 1
+	if seq >= px.done[px.me] {
+		px.done[px.me] = seq + 1
 	}
 	px.mu.Unlock()
 }
@@ -155,6 +156,7 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister) *Paxos {
 	px.persister = persister
 
 	px.instances = make([]*Instance, 0)
+	px.done = make([]int, len(peers))
 	px.readPersist(persister)
 
 	go px.ticker()

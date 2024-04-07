@@ -39,5 +39,5 @@ type DecideReply struct{}
 type DoneArgs struct{}
 
 type DoneReply struct {
-	Done, Decided int
+	Done, Decided, SrvId int
 }
