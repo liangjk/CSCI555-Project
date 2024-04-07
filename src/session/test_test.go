@@ -2,6 +2,8 @@ package session_test
 
 import (
 	"CSCI555Project/session"
+	"fmt"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -228,7 +230,7 @@ func TestUnreliable(t *testing.T) {
 	leaseexpire(rfcfg)
 	rfcfg.end()
 
-	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
+	pxcfg := MakeConfig(t, 5, true, true, session.Paxos)
 	defer pxcfg.Cleanup()
 
 	pxcfg.begin("Test: Unreliable and LongDelay Paxos 5 Servers")
@@ -236,5 +238,178 @@ func TestUnreliable(t *testing.T) {
 	contend(pxcfg)
 	concurrent(pxcfg)
 	leaseexpire(pxcfg)
+	pxcfg.end()
+}
+
+func tostr(num, total int) string {
+	return strconv.Itoa(num % total)
+}
+
+func failover(cfg *Config) {
+	clientNum := 20
+	sess := make([]*session.Session, clientNum)
+	fail := make([]bool, clientNum)
+	path := "failover/mu"
+	wg := sync.WaitGroup{}
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			sess[id] = cfg.MakeSession(cfg.All())
+			if !cfg.check(sess[id].Create(path+tostr(id, clientNum)), []session.Err{session.OK}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	ld := cfg.Leader()
+	cfg.ShutdownServer(ld)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Acquire(path+tostr(id+1, clientNum)), []session.Err{session.OK}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.StartServer(ld)
+	cfg.Connect(ld, cfg.All())
+	ld = cfg.Leader()
+	cfg.ShutdownServer(ld)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Remove(path+tostr(id+2, clientNum)), []session.Err{session.LockBusy}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.StartServer(ld)
+	cfg.Connect(ld, cfg.All())
+	ld = cfg.Leader()
+	cfg.ShutdownServer(ld)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Acquire(path+tostr(id+3, clientNum)), []session.Err{session.LockBusy}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.StartServer(ld)
+	cfg.Connect(ld, cfg.All())
+	ld = cfg.Leader()
+	cfg.ShutdownServer(ld)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Release(path+tostr(id+1, clientNum)), []session.Err{session.OK}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.StartServer(ld)
+	cfg.Connect(ld, cfg.All())
+	ld = cfg.Leader()
+	cfg.ShutdownServer(ld)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Acquire(path+tostr(id+2, clientNum)), []session.Err{session.OK}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.StartServer(ld)
+	cfg.Connect(ld, cfg.All())
+	cfg.ShutdownServer(cfg.Leader())
+	time.Sleep(time.Second * 20)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			nsess := cfg.MakeSession(cfg.All())
+			if !cfg.check(nsess.Acquire(path+tostr(id+2, clientNum)), []session.Err{session.LockBusy}) {
+				fail[id] = true
+			}
+			cfg.DeleteSession(sess[id])
+			sess[id] = nsess
+		}()
+	}
+	wg.Wait()
+	fmt.Print(".")
+	cfg.ShutdownServer(cfg.Leader())
+	time.Sleep(time.Second * 20)
+	wg.Add(clientNum)
+	for i := 0; i < clientNum; i++ {
+		id := i
+		go func() {
+			defer wg.Done()
+			if !cfg.check(sess[id].Acquire(path+tostr(id+2, clientNum)), []session.Err{session.OK}) {
+				fail[id] = true
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Println(".")
+	for i := 0; i < clientNum; i++ {
+		if fail[i] {
+			cfg.t.Fatalf("Session %v failed\n", i)
+		}
+	}
+}
+
+func TestFailover(t *testing.T) {
+	rfcfg := MakeConfig(t, 5, false, false, session.Raft)
+	defer rfcfg.Cleanup()
+
+	rfcfg.begin("Test: Failover Raft 5 Servers")
+	failover(rfcfg)
+	rfcfg.end()
+
+	pxcfg := MakeConfig(t, 5, false, false, session.Paxos)
+	defer pxcfg.Cleanup()
+
+	pxcfg.begin("Test: Failover Paxos 5 Servers")
+	failover(pxcfg)
+	pxcfg.end()
+}
+
+func TestFailoverUnreliable(t *testing.T) {
+	rfcfg := MakeConfig(t, 5, true, false, session.Raft)
+	defer rfcfg.Cleanup()
+
+	rfcfg.begin("Test: Failover Unreliable Raft 5 Servers")
+	failover(rfcfg)
+	rfcfg.end()
+
+	pxcfg := MakeConfig(t, 5, true, false, session.Paxos)
+	defer pxcfg.Cleanup()
+
+	pxcfg.begin("Test: Failover Unreliable Paxos 5 Servers")
+	failover(pxcfg)
 	pxcfg.end()
 }

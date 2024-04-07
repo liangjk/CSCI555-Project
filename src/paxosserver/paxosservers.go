@@ -7,6 +7,7 @@ import (
 )
 
 type PaxosServers struct {
+	leader  int
 	servers []*PaxosServer
 	saved   []*paxos.Persister
 }
@@ -35,8 +36,14 @@ func (srvs *PaxosServers) Shutdown(i int, mu *sync.Mutex) {
 		mu.Unlock()
 		srv.Kill()
 		mu.Lock()
+		srvs.servers[i] = nil
 	}
-	srvs.servers[i] = nil
+	if srvs.leader == i {
+		srvs.leader++
+		if srvs.leader >= len(srvs.servers) {
+			srvs.leader = 0
+		}
+	}
 }
 
 func (srvs *PaxosServers) Start(ends []*labrpc.ClientEnd, i int) {
@@ -54,5 +61,5 @@ func (srvs *PaxosServers) Service(i int) (*labrpc.Service, *labrpc.Service) {
 }
 
 func (srvs *PaxosServers) Leader() int {
-	return 0
+	return srvs.leader
 }

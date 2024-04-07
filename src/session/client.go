@@ -19,17 +19,18 @@ type Session struct {
 	sessid   int32
 	seq      [2]int64
 	protocol string
-	leader   int
+	leader   int32
 
-	mu    sync.Mutex
-	alive map[string]int64
+	mu      sync.Mutex
+	alive   map[string]int64
+	refresh int64
 
 	doneCh chan bool
 }
 
 var assignedId int32 = -2
 
-func Init(servers []*labrpc.ClientEnd, ptl Protocol) *Session {
+func Init(servers []*labrpc.ClientEnd, ptl Protocol, refresh int64) *Session {
 	sess := new(Session)
 	sess.servers = servers
 	sess.sessid = atomic.AddInt32(&assignedId, 2)
@@ -40,6 +41,7 @@ func Init(servers []*labrpc.ClientEnd, ptl Protocol) *Session {
 	}
 	sess.leader = 0
 	sess.alive = make(map[string]int64)
+	sess.refresh = refresh
 	sess.doneCh = make(chan bool)
 	go sess.KeepAlive()
 	return sess
@@ -54,11 +56,11 @@ const retryWait = 1000
 func (sess *Session) Request(rid int32, path, function string) *ErrReply {
 	sess.seq[rid]++
 	args := PathArgs{path, sess.sessid + rid, sess.seq[rid]}
-	sCnt := len(sess.servers)
+	sCnt := int32(len(sess.servers))
 	retry := sCnt
 	for {
 		reply := ErrReply{}
-		ok := sess.servers[sess.leader].Call(function, &args, &reply)
+		ok := sess.servers[atomic.LoadInt32(&sess.leader)%sCnt].Call(function, &args, &reply)
 		if ok {
 			if reply.Result == RepeatedRequest {
 				return sess.Request(rid, path, function)
@@ -67,10 +69,7 @@ func (sess *Session) Request(rid int32, path, function string) *ErrReply {
 				return &reply
 			}
 		}
-		sess.leader++
-		if sess.leader >= sCnt {
-			sess.leader = 0
-		}
+		atomic.AddInt32(&sess.leader, 1)
 		retry--
 		if retry == 0 {
 			timer := time.NewTimer(time.Millisecond * retryWait)
@@ -141,10 +140,7 @@ func (sess *Session) IsHolding(path string) bool {
 	}
 }
 
-const (
-	RefreshRate      = 1000
-	RefreshThreshold = 2
-)
+const RefreshRate = 1000
 
 func (sess *Session) KeepAlive() {
 	const d = time.Millisecond * RefreshRate
@@ -166,7 +162,7 @@ func (sess *Session) KeepAlive() {
 		sess.mu.Lock()
 		now := time.Now().Unix()
 		for path, lease := range sess.alive {
-			if now >= lease-RefreshThreshold {
+			if now >= lease-sess.refresh {
 				extend = append(extend, path)
 			}
 		}

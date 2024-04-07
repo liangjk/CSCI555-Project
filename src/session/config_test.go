@@ -35,9 +35,10 @@ type Config struct {
 	n        int
 	protocol session.Protocol
 
-	net      *labrpc.Network
-	endnames [][]string
-	sessions map[*session.Session][]string
+	net                 *labrpc.Network
+	reliable, longdelay bool
+	endnames            [][]string
+	sessions            map[*session.Session][]string
 
 	servers Servers
 
@@ -58,8 +59,10 @@ func (cfg *Config) makeServers() {
 
 func (cfg *Config) SetNetwork(unreliable bool, longdelay bool) {
 	cfg.net.Reliable(!unreliable)
+	cfg.reliable = !unreliable
 	cfg.net.LongDelays(longdelay)
 	cfg.net.LongReordering(longdelay)
+	cfg.longdelay = longdelay
 }
 
 func MakeConfig(t *testing.T, n int, unreliable bool, longdelay bool, protocol session.Protocol) *Config {
@@ -185,7 +188,14 @@ func (cfg *Config) MakeSession(to []int) *session.Session {
 		cfg.net.Connect(endnames[j], j)
 	}
 
-	sess := session.Init(ends, cfg.protocol)
+	var threshold int64 = 2
+	if !cfg.reliable {
+		threshold += 2
+	}
+	if cfg.longdelay {
+		threshold += 4
+	}
+	sess := session.Init(ends, cfg.protocol, threshold)
 	cfg.sessions[sess] = endnames
 	cfg.connectSessionUnlocked(sess, to)
 	return sess
@@ -273,7 +283,14 @@ func (cfg *Config) StartServer(i int) {
 func (cfg *Config) Leader() int {
 	cfg.mu.Lock()
 	defer cfg.mu.Unlock()
-	return cfg.servers.Leader()
+	ld := cfg.servers.Leader()
+	for ld < 0 {
+		cfg.mu.Unlock()
+		time.Sleep(time.Microsecond * 1000)
+		cfg.mu.Lock()
+		ld = cfg.servers.Leader()
+	}
+	return ld
 }
 
 // start a Test.
