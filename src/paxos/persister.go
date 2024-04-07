@@ -8,6 +8,8 @@ type Persister struct {
 	mu            sync.Mutex
 	paxosstate    int
 	instanceState []PersistInstance
+	snapshotuntil int
+	snapshot      []byte
 }
 
 func MakePersister() *Persister {
@@ -42,6 +44,19 @@ func (ps *Persister) Save(paxosstate int, instState []PersistInstance) {
 	defer ps.mu.Unlock()
 	ps.paxosstate = paxosstate
 	ps.instanceState = clone(instState)
+}
+
+func (ps *Persister) Snapshot(until int, snapshot []byte) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	ps.snapshotuntil = until
+	ps.snapshot = clone(snapshot)
+}
+
+func (ps *Persister) ReadSnapshot() (int, []byte) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	return ps.snapshotuntil, clone(ps.snapshot)
 }
 
 type PersistInstance struct {

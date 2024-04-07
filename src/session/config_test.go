@@ -66,7 +66,7 @@ func (cfg *Config) SetNetwork(unreliable bool, longdelay bool) {
 }
 
 func MakeConfig(t *testing.T, n int, unreliable bool, longdelay bool, protocol session.Protocol) *Config {
-	cfg := &Config{t: t, n: n}
+	cfg := &Config{t: t, n: n, protocol: protocol}
 
 	cfg.net = labrpc.MakeNetwork()
 	cfg.endnames = make([][]string, cfg.n)

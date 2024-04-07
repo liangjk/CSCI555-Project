@@ -18,17 +18,17 @@ func (srv *PaxosServer) applier() {
 				if ok {
 					switch op.Code {
 					case session.Create:
-						srv.applyCreate(&op)
+						srv.applyCreateL(&op)
 					case session.Remove:
-						srv.applyRemove(&op)
+						srv.applyRemoveL(&op)
 					case session.Acquire:
-						srv.applyAcquire(&op)
+						srv.applyAcquireL(&op)
 					case session.Release:
-						srv.applyRelease(&op)
+						srv.applyReleaseL(&op)
 					case session.Extend:
-						srv.applyExtend(&op)
+						srv.applyExtendL(&op)
 					case session.Revoke:
-						srv.applyRevoke(&op)
+						srv.applyRevokeL(&op)
 					default:
 						paxos.DPrintf("Unknown operation: %v\n", op)
 					}
@@ -36,7 +36,7 @@ func (srv *PaxosServer) applier() {
 					paxos.DPrintf("Unknown decided instance: %v\n", msg)
 				}
 			}
-			srv.px.Done(srv.applied)
+			// srv.px.Done(srv.applied)
 			srv.applied++
 			srv.mu.Unlock()
 		} else {
@@ -57,9 +57,7 @@ func (srv *PaxosServer) updSessL(sessid int32, seq int64) {
 	}
 }
 
-func (srv *PaxosServer) applyCreate(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyCreateL(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
@@ -70,9 +68,7 @@ func (srv *PaxosServer) applyCreate(op *session.Op) {
 	srv.updSessL(op.Sessid, op.Seq)
 }
 
-func (srv *PaxosServer) applyRemove(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyRemoveL(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
@@ -82,9 +78,7 @@ func (srv *PaxosServer) applyRemove(op *session.Op) {
 	srv.updSessL(op.Sessid, op.Seq)
 }
 
-func (srv *PaxosServer) applyAcquire(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyAcquireL(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
@@ -99,9 +93,7 @@ func (srv *PaxosServer) applyAcquire(op *session.Op) {
 	srv.updSessL(op.Sessid, op.Seq)
 }
 
-func (srv *PaxosServer) applyRelease(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyReleaseL(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
@@ -111,9 +103,7 @@ func (srv *PaxosServer) applyRelease(op *session.Op) {
 	srv.updSessL(op.Sessid, op.Seq)
 }
 
-func (srv *PaxosServer) applyExtend(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyExtendL(op *session.Op) {
 	if op.Seq <= srv.sessions[op.Sessid] {
 		return
 	}
@@ -123,9 +113,7 @@ func (srv *PaxosServer) applyExtend(op *session.Op) {
 	srv.updSessL(op.Sessid, op.Seq)
 }
 
-func (srv *PaxosServer) applyRevoke(op *session.Op) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
+func (srv *PaxosServer) applyRevokeL(op *session.Op) {
 	if file, ok := srv.files[op.Path]; ok && file.Sessid == op.Sessid && file.Lease == op.Lease {
 		file.Sessid = -1
 	}

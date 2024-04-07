@@ -34,7 +34,7 @@ func (srv *PaxosServer) operateL(op *session.Op) {
 	pxseq := -1
 	for {
 		if srv.applied > pxseq {
-			pxseq := srv.px.Max() + 1
+			pxseq = srv.px.Max() + 1
 			srv.px.Start(pxseq, *op)
 		}
 		srv.mu.Unlock()
@@ -47,7 +47,7 @@ func (srv *PaxosServer) operateL(op *session.Op) {
 		case <-timer.C:
 		}
 		srv.mu.Lock()
-		if op.Seq < srv.sessions[op.Sessid] {
+		if op.Seq <= srv.sessions[op.Sessid] {
 			return
 		}
 		if ms < threshold {
@@ -75,7 +75,7 @@ func (srv *PaxosServer) Remove(args *session.PathArgs, reply *session.ErrReply) 
 		reply.Result = session.RepeatedRequest
 		return
 	}
-	op := &session.Op{Code: session.Create, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq}
+	op := &session.Op{Code: session.Remove, Path: args.Path, Sessid: args.Sessid, Seq: args.Seq}
 	srv.operateL(op)
 	if _, ok := srv.files[args.Path]; ok {
 		reply.Result = session.LockBusy
