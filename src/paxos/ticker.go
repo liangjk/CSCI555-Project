@@ -19,10 +19,12 @@ func (px *Paxos) ticker() {
 		args := DoneArgs{}
 		for i, peer := range px.peers {
 			if i != px.me {
-				reply := DoneReply{SrvId: -1}
+				reply := DoneReply{}
 				peer := peer
 				go func() {
-					peer.Call("Paxos.GetDone", &args, &reply)
+					if !peer.Call("Paxos.GetDone", &args, &reply) {
+						reply.SrvId = -1
+					}
 					replyCh <- reply
 				}()
 			}
@@ -38,7 +40,7 @@ func (px *Paxos) ticker() {
 				replyDone[reply.SrvId] = reply.Done
 			}
 		}
-		
+
 		px.mu.Lock()
 		done := px.done[px.me]
 		for i, rd := range replyDone {
