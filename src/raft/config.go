@@ -304,7 +304,7 @@ func (cfg *config) start1(i int, applier func(int, chan ApplyMsg)) {
 			}
 		}
 	} else {
-		cfg.saved[i] = MakePersister()
+		cfg.saved[i] = MakePersister(true)
 	}
 
 	cfg.mu.Unlock()

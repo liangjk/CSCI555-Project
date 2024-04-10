@@ -39,12 +39,12 @@ func (srvs *RaftServers) Shutdown(i int, mu *sync.Mutex) {
 	srvs.servers[i] = nil
 }
 
-func (srvs *RaftServers) Start(ends []*labrpc.ClientEnd, i int) {
+func (srvs *RaftServers) Start(ends []*labrpc.ClientEnd, i int, durable bool) {
 	if srvs.servers[i] != nil {
 		srvs.saved[i] = srvs.saved[i].Copy()
 		go srvs.servers[i].Kill()
 	} else if srvs.saved[i] == nil {
-		srvs.saved[i] = raft.MakePersister()
+		srvs.saved[i] = raft.MakePersister(durable)
 	}
 	srvs.servers[i] = StartServer(ends, i, srvs.saved[i])
 }

@@ -40,6 +40,7 @@ func (srv *PaxosServer) checkLease() {
 func (srv *PaxosServer) revoke(path string, file *session.File, op *session.Op) {
 	const threshold = time.Millisecond * MaxWaitMs
 	ms := time.Millisecond * MinWaitMs
+	step := waitStep
 	pxseq := srv.px.Max() + 1
 	srv.px.Start(pxseq, *op)
 	timer := time.NewTimer(ms)
@@ -58,7 +59,12 @@ func (srv *PaxosServer) revoke(path string, file *session.File, op *session.Op) 
 			}
 			srv.mu.Unlock()
 			if ms < threshold {
-				ms *= 2
+				if step > 0 {
+					step--
+				} else {
+					ms <<= 1
+					step = waitStep
+				}
 			}
 			timer.Reset(ms)
 		} else {

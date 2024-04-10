@@ -14,17 +14,19 @@ import (
 // after you've implemented snapshots, pass the current snapshot
 // (or nil if there's not yet a snapshot).
 func (rf *Raft) persistL() {
-	w := new(bytes.Buffer)
-	e := labgob.NewEncoder(w)
-	e.Encode(rf.currentTerm)
-	e.Encode(rf.votedFor)
-	e.Encode(rf.logs)
-	e.Encode(rf.startIndex)
-	raftstate := w.Bytes()
-	if rf.startIndex > 0 {
-		rf.persister.Save(raftstate, rf.snapshot)
-	} else {
-		rf.persister.Save(raftstate, nil)
+	if rf.persister.enable {
+		w := new(bytes.Buffer)
+		e := labgob.NewEncoder(w)
+		e.Encode(rf.currentTerm)
+		e.Encode(rf.votedFor)
+		e.Encode(rf.logs)
+		e.Encode(rf.startIndex)
+		raftstate := w.Bytes()
+		if rf.startIndex > 0 {
+			rf.persister.Save(raftstate, rf.snapshot)
+		} else {
+			rf.persister.Save(raftstate, nil)
+		}
 	}
 }
 

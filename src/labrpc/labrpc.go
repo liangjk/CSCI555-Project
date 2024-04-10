@@ -47,15 +47,17 @@ package labrpc
 //   pass svc to srv.AddService()
 //
 
-import "CSCI555Project/labgob"
-import "bytes"
-import "reflect"
-import "sync"
-import "log"
-import "strings"
-import "math/rand"
-import "time"
-import "sync/atomic"
+import (
+	"CSCI555Project/labgob"
+	"bytes"
+	"log"
+	"math/rand"
+	"reflect"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+)
 
 type reqMsg struct {
 	endname  interface{} // name of sending ClientEnd
@@ -188,8 +190,7 @@ func (rn *Network) LongDelays(yes bool) {
 }
 
 func (rn *Network) readEndnameInfo(endname interface{}) (enabled bool,
-	servername interface{}, server *Server, reliable bool, longreordering bool,
-) {
+	servername interface{}, server *Server, reliable bool, longreordering bool, longdelay bool) {
 	rn.mu.Lock()
 	defer rn.mu.Unlock()
 
@@ -200,6 +201,7 @@ func (rn *Network) readEndnameInfo(endname interface{}) (enabled bool,
 	}
 	reliable = rn.reliable
 	longreordering = rn.longReordering
+	longdelay = rn.longDelays
 	return
 }
 
@@ -214,14 +216,15 @@ func (rn *Network) isServerDead(endname interface{}, servername interface{}, ser
 }
 
 func (rn *Network) processReq(req reqMsg) {
-	enabled, servername, server, reliable, longreordering := rn.readEndnameInfo(req.endname)
+	enabled, servername, server, reliable, longreordering, longDelays := rn.readEndnameInfo(req.endname)
 
 	if enabled && servername != nil && server != nil {
-		if reliable == false {
-			// short delay
-			ms := (rand.Int() % 27)
-			time.Sleep(time.Duration(ms) * time.Millisecond)
+		// short delay
+		ms := rand.Int() % 20
+		if longreordering {
+			ms = rand.Int() % 200
 		}
+		time.Sleep(time.Duration(ms) * time.Millisecond)
 
 		if reliable == false && (rand.Int()%1000) < 100 {
 			// drop the request, return as if timeout
@@ -273,9 +276,9 @@ func (rn *Network) processReq(req reqMsg) {
 		} else if reliable == false && (rand.Int()%1000) < 100 {
 			// drop the reply, return as if timeout
 			req.replyCh <- replyMsg{false, nil}
-		} else if longreordering == true && rand.Intn(900) < 600 {
+		} else if longreordering == true {
 			// delay the response for a while
-			ms := 200 + rand.Intn(1+rand.Intn(2000))
+			ms := rand.Int() % 200
 			// Russ points out that this timer arrangement will decrease
 			// the number of goroutines, so that the race
 			// detector is less likely to get upset.
@@ -283,20 +286,23 @@ func (rn *Network) processReq(req reqMsg) {
 				atomic.AddInt64(&rn.bytes, int64(len(reply.reply)))
 				req.replyCh <- reply
 			})
-		} else {
-			atomic.AddInt64(&rn.bytes, int64(len(reply.reply)))
-			req.replyCh <- reply
+		} else { // delay the response for a while
+			ms := rand.Int() % 20
+			// Russ points out that this timer arrangement will decrease
+			// the number of goroutines, so that the race
+			// detector is less likely to get upset.
+			time.AfterFunc(time.Duration(ms)*time.Millisecond, func() {
+				atomic.AddInt64(&rn.bytes, int64(len(reply.reply)))
+				req.replyCh <- reply
+			})
 		}
 	} else {
 		// simulate no reply and eventual timeout.
 		ms := 0
-		rn.mu.Lock()
-		longDelays := rn.longDelays
-		rn.mu.Unlock()
 		if longDelays {
 			// let Raft tests check that leader doesn't send
 			// RPCs synchronously.
-			ms = (rand.Int() % 7000)
+			ms = (rand.Int() % 2000)
 		} else {
 			// many kv tests require the client to try each
 			// server in fairly rapid succession.

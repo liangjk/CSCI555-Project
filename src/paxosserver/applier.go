@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const ApplyWaitMs = 100
+const ApplyWaitMs = 50
 
 func (srv *PaxosServer) applier() {
 	for {

@@ -6,10 +6,11 @@ type Persister struct {
 	mu        sync.Mutex
 	raftstate []byte
 	snapshot  []byte
+	enable    bool
 }
 
-func MakePersister() *Persister {
-	return &Persister{}
+func MakePersister(enable bool) *Persister {
+	return &Persister{enable: enable}
 }
 
 func clone(orig []byte) []byte {
@@ -21,7 +22,7 @@ func clone(orig []byte) []byte {
 func (ps *Persister) Copy() *Persister {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	np := MakePersister()
+	np := MakePersister(ps.enable)
 	np.raftstate = ps.raftstate
 	np.snapshot = ps.snapshot
 	return np

@@ -25,12 +25,14 @@ type PaxosServer struct {
 
 const (
 	MinWaitMs = 10
-	MaxWaitMs = 200
+	MaxWaitMs = 100
+	waitStep  = 10
 )
 
 func (srv *PaxosServer) operateL(op *session.Op) {
 	const threshold = time.Millisecond * MaxWaitMs
 	ms := time.Millisecond * MinWaitMs
+	step := waitStep
 	pxseq := -1
 	for {
 		if srv.applied > pxseq {
@@ -51,7 +53,12 @@ func (srv *PaxosServer) operateL(op *session.Op) {
 			return
 		}
 		if ms < threshold {
-			ms *= 2
+			if step > 0 {
+				step--
+			} else {
+				ms <<= 1
+				step = waitStep
+			}
 		}
 	}
 }

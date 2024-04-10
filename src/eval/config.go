@@ -1,4 +1,4 @@
-package session_test
+package main
 
 import (
 	"CSCI555Project/labrpc"
@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sync"
-	"testing"
 	"time"
 
 	crand "crypto/rand"
@@ -31,9 +30,9 @@ type Servers interface {
 
 type Config struct {
 	mu       sync.Mutex
-	t        *testing.T
 	n        int
 	protocol session.Protocol
+	durable  bool
 
 	net                 *labrpc.Network
 	reliable, longdelay bool
@@ -65,8 +64,8 @@ func (cfg *Config) SetNetwork(unreliable bool, longdelay bool) {
 	cfg.longdelay = longdelay
 }
 
-func MakeConfig(t *testing.T, n int, unreliable bool, longdelay bool, protocol session.Protocol) *Config {
-	cfg := &Config{t: t, n: n, protocol: protocol}
+func MakeConfig(n int, unreliable bool, longdelay bool, durable bool, protocol session.Protocol) *Config {
+	cfg := &Config{n: n, durable: durable, protocol: protocol}
 
 	cfg.net = labrpc.MakeNetwork()
 	cfg.endnames = make([][]string, cfg.n)
@@ -91,6 +90,7 @@ func (cfg *Config) Cleanup() {
 	cfg.servers.Kill()
 	cfg.net.Cleanup()
 	cfg.mu.Unlock()
+	time.Sleep(time.Second * 10)
 }
 
 // attach server i to servers listed in to
@@ -270,7 +270,7 @@ func (cfg *Config) StartServer(i int) {
 		cfg.net.Connect(cfg.endnames[i][j], j)
 	}
 
-	cfg.servers.Start(ends, i, true)
+	cfg.servers.Start(ends, i, cfg.durable)
 	cfg.mu.Unlock()
 
 	srv := labrpc.MakeServer()
@@ -302,18 +302,14 @@ func (cfg *Config) begin(description string) {
 	cfg.bytes0 = cfg.net.GetTotalBytes()
 }
 
-// end a Test -- the fact that we got here means there
-// was no failure.
-// print the Passed message,
-// and some performance numbers.
+// end a Test
+// print some performance numbers.
 func (cfg *Config) end() {
-	if cfg.t.Failed() == false {
-		t := time.Since(cfg.t0).Seconds() // real time
-		npeers := cfg.n
-		nrpc := cfg.net.GetTotalCount() - cfg.rpcs0
-		nbytes := cfg.net.GetTotalBytes() - cfg.bytes0
+	t := time.Since(cfg.t0).Milliseconds() // real time
+	npeers := cfg.n
+	nrpc := cfg.net.GetTotalCount() - cfg.rpcs0
+	nbytes := cfg.net.GetTotalBytes() - cfg.bytes0
 
-		fmt.Printf("  ... Passed --")
-		fmt.Printf("  %4.1f  %d %5d %6.3fKB\n", t, npeers, nrpc, float32(nbytes)/1024)
-	}
+	fmt.Printf("  ... Finished --")
+	fmt.Printf("  %d ms %d servers %5d rpcs %6.3f KB\n\n", t, npeers, nrpc, float32(nbytes)/1024)
 }

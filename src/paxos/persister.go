@@ -10,10 +10,11 @@ type Persister struct {
 	instanceState []PersistInstance
 	snapshotuntil int
 	snapshot      []byte
+	enable        bool
 }
 
-func MakePersister() *Persister {
-	return &Persister{}
+func MakePersister(enable bool) *Persister {
+	return &Persister{enable: enable}
 }
 
 func clone[T any](orig []T) []T {
@@ -25,7 +26,7 @@ func clone[T any](orig []T) []T {
 func (ps *Persister) Copy() *Persister {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	np := MakePersister()
+	np := MakePersister(ps.enable)
 	np.paxosstate = ps.paxosstate
 	np.instanceState = ps.instanceState
 	return np
@@ -91,35 +92,39 @@ func (px *Paxos) readPersist(ps *Persister) {
 }
 
 func (px *Paxos) persistL() {
-	pinsts := make([]PersistInstance, len(px.instances))
-	for _, inst := range px.instances {
-		inst.mu.Lock()
+	if px.persister.enable {
+		pinsts := make([]PersistInstance, len(px.instances))
+		for _, inst := range px.instances {
+			inst.mu.Lock()
+		}
+		for i, inst := range px.instances {
+			pinsts[i].prepare = inst.prepare
+			pinsts[i].accept = inst.accept
+			pinsts[i].value = inst.value
+			pinsts[i].status = inst.status
+		}
+		for _, inst := range px.instances {
+			inst.mu.Unlock()
+		}
+		px.persister.Save(px.startIndex, pinsts)
 	}
-	for i, inst := range px.instances {
-		pinsts[i].prepare = inst.prepare
-		pinsts[i].accept = inst.accept
-		pinsts[i].value = inst.value
-		pinsts[i].status = inst.status
-	}
-	for _, inst := range px.instances {
-		inst.mu.Unlock()
-	}
-	px.persister.Save(px.startIndex, pinsts)
 }
 
 func (px *Paxos) persistInstanceL(seq int, inst *Instance) {
 	ps := px.persister
-	ps.mu.Lock()
-	defer ps.mu.Unlock()
-	if seq < ps.paxosstate {
-		return
+	if ps.enable {
+		ps.mu.Lock()
+		defer ps.mu.Unlock()
+		if seq < ps.paxosstate {
+			return
+		}
+		for seq-ps.paxosstate >= len(ps.instanceState) {
+			ps.instanceState = append(ps.instanceState, PersistInstance{status: Pending})
+		}
+		pinst := &ps.instanceState[seq-ps.paxosstate]
+		pinst.prepare = inst.prepare
+		pinst.accept = inst.accept
+		pinst.value = inst.value
+		pinst.status = inst.status
 	}
-	for seq-ps.paxosstate >= len(ps.instanceState) {
-		ps.instanceState = append(ps.instanceState, PersistInstance{status: Pending})
-	}
-	pinst := &ps.instanceState[seq-ps.paxosstate]
-	pinst.prepare = inst.prepare
-	pinst.accept = inst.accept
-	pinst.value = inst.value
-	pinst.status = inst.status
 }

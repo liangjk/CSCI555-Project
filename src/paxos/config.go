@@ -132,7 +132,7 @@ func (cfg *config) start1(i int) {
 	if cfg.saved[i] != nil {
 		cfg.saved[i] = cfg.saved[i].Copy()
 	} else {
-		cfg.saved[i] = MakePersister()
+		cfg.saved[i] = MakePersister(true)
 	}
 
 	cfg.mu.Unlock()
