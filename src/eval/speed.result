@@ -1,0 +1,718 @@
+Round 0
+one client sequential servers: 3 reliable, no long delay protocol: Raft ...
+  ... Finished --  132467 ms 3 servers  6000 rpcs 2293.795 KB
+
+Round 0
+one client sequential servers: 3 reliable, no long delay protocol: Paxos ...
+  ... Finished --  277308 ms 3 servers 14828 rpcs 3236.205 KB
+
+Round 0
+one client sequential servers: 3 reliable, long delay protocol: Raft ...
+  ... Finished --  775596 ms 3 servers  9182 rpcs 3426.065 KB
+
+Round 0
+one client sequential servers: 3 reliable, long delay protocol: Paxos ...
+  ... Finished --  1231510 ms 3 servers 17678 rpcs 3455.983 KB
+
+Round 0
+one client sequential servers: 5 reliable, no long delay protocol: Raft ...
+  ... Finished --  135555 ms 5 servers 10000 rpcs 4194.048 KB
+
+Round 0
+one client sequential servers: 5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  280224 ms 5 servers 28780 rpcs 6162.967 KB
+
+Round 0
+one client sequential servers: 5 reliable, long delay protocol: Raft ...
+  ... Finished --  819895 ms 5 servers 16920 rpcs 6553.338 KB
+
+Round 0
+one client sequential servers: 5 reliable, long delay protocol: Paxos ...
+  ... Finished --  1287042 ms 5 servers 38820 rpcs 6987.910 KB
+
+Round 0
+one client sequential servers: 7 reliable, no long delay protocol: Raft ...
+  ... Finished --  137299 ms 7 servers 14000 rpcs 6087.285 KB
+
+Round 0
+one client sequential servers: 7 reliable, no long delay protocol: Paxos ...
+  ... Finished --  280047 ms 7 servers 43838 rpcs 9186.834 KB
+
+Round 0
+one client sequential servers: 7 reliable, long delay protocol: Raft ...
+  ... Finished --  837197 ms 7 servers 24680 rpcs 9700.961 KB
+
+Round 0
+one client sequential servers: 7 reliable, long delay protocol: Paxos ...
+  ... Finished --  1333810 ms 7 servers 65888 rpcs 11040.562 KB
+
+Round 0
+one client sequential servers: 9 reliable, no long delay protocol: Raft ...
+  ... Finished --  135771 ms 9 servers 18000 rpcs 7988.833 KB
+
+Round 0
+one client sequential servers: 9 reliable, no long delay protocol: Paxos ...
+  ... Finished --  277179 ms 9 servers 59936 rpcs 12302.137 KB
+
+Round 0
+one client sequential servers: 9 reliable, long delay protocol: Raft ...
+  ... Finished --  843620 ms 9 servers 32568 rpcs 12876.100 KB
+
+Round 0
+one client sequential servers: 9 reliable, long delay protocol: Paxos ...
+  ... Finished --  1342206 ms 9 servers 98168 rpcs 15550.914 KB
+
+Round 0
+one client sequential servers: 11 reliable, no long delay protocol: Raft ...
+  ... Finished --  135920 ms 11 servers 22000 rpcs 9904.992 KB
+
+Round 0
+one client sequential servers: 11 reliable, no long delay protocol: Paxos ...
+  ... Finished --  276317 ms 11 servers 77070 rpcs 15549.416 KB
+
+Round 0
+one client sequential servers: 11 reliable, long delay protocol: Raft ...
+  ... Finished --  842858 ms 11 servers 39830 rpcs 15936.427 KB
+
+Round 0
+one client sequential servers: 11 reliable, long delay protocol: Paxos ...
+  ... Finished --  1363023 ms 11 servers 136690 rpcs 20650.211 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  29451 ms 5 servers 10000 rpcs 4801.600 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  54272 ms 5 servers 26540 rpcs 4659.939 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Raft ...
+  ... Finished --  129876 ms 5 servers 14249 rpcs 4745.539 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  738774 ms 5 servers 43910 rpcs 6652.094 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  12165 ms 5 servers 10000 rpcs 6163.247 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  26675 ms 5 servers 26260 rpcs 4644.779 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Raft ...
+  ... Finished --  74210 ms 5 servers 13978 rpcs 5190.940 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  640170 ms 5 servers 44928 rpcs 6816.096 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  5452 ms 5 servers 10004 rpcs 8619.875 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  13668 ms 5 servers 26120 rpcs 4647.312 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Raft ...
+  ... Finished --  33032 ms 5 servers 13158 rpcs 6163.470 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  447254 ms 5 servers 46133 rpcs 7051.049 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  2464 ms 5 servers 10000 rpcs 12229.758 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  6932 ms 5 servers 26060 rpcs 4640.230 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Raft ...
+  ... Finished --  20088 ms 5 servers 13562 rpcs 7978.084 KB
+
+Round 0
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  250328 ms 5 servers 41009 rpcs 6472.424 KB
+
+Round 0
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  91392 ms 5 servers 30061 rpcs 22631.133 KB
+
+Round 0
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  163712 ms 5 servers 79108 rpcs 18743.215 KB
+
+Round 0
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  76745 ms 5 servers 54989 rpcs 58571.133 KB
+
+Round 0
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  149795 ms 5 servers 142150 rpcs 34100.613 KB
+
+Round 0
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  67201 ms 5 servers 105474 rpcs 173154.250 KB
+
+Round 0
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  145841 ms 5 servers 272322 rpcs 65592.883 KB
+
+Round 0
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  57252 ms 5 servers 204495 rpcs 544967.062 KB
+
+Round 0
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  144778 ms 5 servers 533277 rpcs 128816.789 KB
+
+Round 1
+one client sequential servers: 3 reliable, no long delay protocol: Raft ...
+  ... Finished --  131546 ms 3 servers  6000 rpcs 2324.477 KB
+
+Round 1
+one client sequential servers: 3 reliable, no long delay protocol: Paxos ...
+  ... Finished --  278087 ms 3 servers 14828 rpcs 3255.940 KB
+
+Round 1
+one client sequential servers: 3 reliable, long delay protocol: Raft ...
+  ... Finished --  784309 ms 3 servers  9298 rpcs 3477.130 KB
+
+Round 1
+one client sequential servers: 3 reliable, long delay protocol: Paxos ...
+  ... Finished --  1208293 ms 3 servers 17612 rpcs 3469.566 KB
+
+Round 1
+one client sequential servers: 5 reliable, no long delay protocol: Raft ...
+  ... Finished --  136521 ms 5 servers 10000 rpcs 4213.109 KB
+
+Round 1
+one client sequential servers: 5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  281334 ms 5 servers 28800 rpcs 6199.893 KB
+
+Round 1
+one client sequential servers: 5 reliable, long delay protocol: Raft ...
+  ... Finished --  822451 ms 5 servers 16964 rpcs 6594.700 KB
+
+Round 1
+one client sequential servers: 5 reliable, long delay protocol: Paxos ...
+  ... Finished --  1296788 ms 5 servers 38920 rpcs 7031.951 KB
+
+Round 1
+one client sequential servers: 7 reliable, no long delay protocol: Raft ...
+  ... Finished --  136234 ms 7 servers 14000 rpcs 6117.225 KB
+
+Round 1
+one client sequential servers: 7 reliable, no long delay protocol: Paxos ...
+  ... Finished --  282316 ms 7 servers 43880 rpcs 9241.373 KB
+
+Round 1
+one client sequential servers: 7 reliable, long delay protocol: Raft ...
+  ... Finished --  828873 ms 7 servers 24572 rpcs 9697.154 KB
+
+Round 1
+one client sequential servers: 7 reliable, long delay protocol: Paxos ...
+  ... Finished --  1334901 ms 7 servers 65930 rpcs 11093.281 KB
+
+Round 1
+one client sequential servers: 9 reliable, no long delay protocol: Raft ...
+  ... Finished --  136393 ms 9 servers 18000 rpcs 8009.687 KB
+
+Round 1
+one client sequential servers: 9 reliable, no long delay protocol: Paxos ...
+  ... Finished --  278382 ms 9 servers 59936 rpcs 12368.576 KB
+
+Round 1
+one client sequential servers: 9 reliable, long delay protocol: Raft ...
+  ... Finished --  837299 ms 9 servers 32360 rpcs 12876.613 KB
+
+Round 1
+one client sequential servers: 9 reliable, long delay protocol: Paxos ...
+  ... Finished --  1337785 ms 9 servers 97952 rpcs 15598.471 KB
+
+Round 1
+one client sequential servers: 11 reliable, no long delay protocol: Raft ...
+  ... Finished --  135890 ms 11 servers 22000 rpcs 9943.875 KB
+
+Round 1
+one client sequential servers: 11 reliable, no long delay protocol: Paxos ...
+  ... Finished --  275485 ms 11 servers 77070 rpcs 15631.441 KB
+
+Round 1
+one client sequential servers: 11 reliable, long delay protocol: Raft ...
+  ... Finished --  848092 ms 11 servers 40280 rpcs 16095.579 KB
+
+Round 1
+one client sequential servers: 11 reliable, long delay protocol: Paxos ...
+  ... Finished --  1358897 ms 11 servers 136360 rpcs 20704.455 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  30455 ms 5 servers 10000 rpcs 4854.284 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  54755 ms 5 servers 26540 rpcs 4695.086 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Raft ...
+  ... Finished --  127559 ms 5 servers 13567 rpcs 4596.688 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  697568 ms 5 servers 42855 rpcs 6576.191 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  13990 ms 5 servers 10000 rpcs 6173.908 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  28385 ms 5 servers 26280 rpcs 4664.205 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Raft ...
+  ... Finished --  67397 ms 5 servers 13761 rpcs 5260.776 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  629541 ms 5 servers 44574 rpcs 6767.626 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  5590 ms 5 servers 10000 rpcs 8616.051 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  14005 ms 5 servers 26140 rpcs 4649.039 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Raft ...
+  ... Finished --  38579 ms 5 servers 13728 rpcs 6093.190 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  451878 ms 5 servers 45386 rpcs 6944.443 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  2575 ms 5 servers 10000 rpcs 12575.498 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  7109 ms 5 servers 26060 rpcs 4640.240 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Raft ...
+  ... Finished --  21851 ms 5 servers 13468 rpcs 7472.611 KB
+
+Round 1
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  269150 ms 5 servers 45119 rpcs 7021.272 KB
+
+Round 1
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  91410 ms 5 servers 30082 rpcs 22584.816 KB
+
+Round 1
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  165324 ms 5 servers 79640 rpcs 18868.801 KB
+
+Round 1
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  78201 ms 5 servers 55565 rpcs 59208.789 KB
+
+Round 1
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  152137 ms 5 servers 144834 rpcs 34746.996 KB
+
+Round 1
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  66210 ms 5 servers 103811 rpcs 169033.547 KB
+
+Round 1
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  147776 ms 5 servers 276359 rpcs 66567.148 KB
+
+Round 1
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  57938 ms 5 servers 206617 rpcs 552498.188 KB
+
+Round 1
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  143355 ms 5 servers 529985 rpcs 128014.266 KB
+
+Round 2
+one client sequential servers: 3 reliable, no long delay protocol: Raft ...
+  ... Finished --  132512 ms 3 servers  6000 rpcs 2320.114 KB
+
+Round 2
+one client sequential servers: 3 reliable, no long delay protocol: Paxos ...
+  ... Finished --  278175 ms 3 servers 14828 rpcs 3255.740 KB
+
+Round 2
+one client sequential servers: 3 reliable, long delay protocol: Raft ...
+  ... Finished --  787526 ms 3 servers  9264 rpcs 3460.649 KB
+
+Round 2
+one client sequential servers: 3 reliable, long delay protocol: Paxos ...
+  ... Finished --  1215173 ms 3 servers 17634 rpcs 3471.442 KB
+
+Round 2
+one client sequential servers: 5 reliable, no long delay protocol: Raft ...
+  ... Finished --  136542 ms 5 servers 10000 rpcs 4216.504 KB
+
+Round 2
+one client sequential servers: 5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  280464 ms 5 servers 28780 rpcs 6198.033 KB
+
+Round 2
+one client sequential servers: 5 reliable, long delay protocol: Raft ...
+  ... Finished --  820865 ms 5 servers 17060 rpcs 6608.871 KB
+
+Round 2
+one client sequential servers: 5 reliable, long delay protocol: Paxos ...
+  ... Finished --  1301689 ms 5 servers 38980 rpcs 7036.875 KB
+
+Round 2
+one client sequential servers: 7 reliable, no long delay protocol: Raft ...
+  ... Finished --  136136 ms 7 servers 14000 rpcs 6118.924 KB
+
+Round 2
+one client sequential servers: 7 reliable, no long delay protocol: Paxos ...
+  ... Finished --  277558 ms 7 servers 43796 rpcs 9234.006 KB
+
+Round 2
+one client sequential servers: 7 reliable, long delay protocol: Raft ...
+  ... Finished --  839011 ms 7 servers 24830 rpcs 9765.373 KB
+
+Round 2
+one client sequential servers: 7 reliable, long delay protocol: Paxos ...
+  ... Finished --  1337460 ms 7 servers 65972 rpcs 11098.821 KB
+
+Round 2
+one client sequential servers: 9 reliable, no long delay protocol: Raft ...
+  ... Finished --  136861 ms 9 servers 18000 rpcs 8015.789 KB
+
+Round 2
+one client sequential servers: 9 reliable, no long delay protocol: Paxos ...
+  ... Finished --  278101 ms 9 servers 59936 rpcs 12368.586 KB
+
+Round 2
+one client sequential servers: 9 reliable, long delay protocol: Raft ...
+  ... Finished --  840374 ms 9 servers 32608 rpcs 12963.233 KB
+
+Round 2
+one client sequential servers: 9 reliable, long delay protocol: Paxos ...
+  ... Finished --  1346929 ms 9 servers 98312 rpcs 15625.902 KB
+
+Round 2
+one client sequential servers: 11 reliable, no long delay protocol: Raft ...
+  ... Finished --  135838 ms 11 servers 22000 rpcs 9939.852 KB
+
+Round 2
+one client sequential servers: 11 reliable, no long delay protocol: Paxos ...
+  ... Finished --  276382 ms 11 servers 77070 rpcs 15631.333 KB
+
+Round 2
+one client sequential servers: 11 reliable, long delay protocol: Raft ...
+  ... Finished --  841128 ms 11 servers 39880 rpcs 15994.183 KB
+
+Round 2
+one client sequential servers: 11 reliable, long delay protocol: Paxos ...
+  ... Finished --  1353605 ms 11 servers 136140 rpcs 20684.262 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  30553 ms 5 servers 10000 rpcs 4872.789 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  55240 ms 5 servers 26540 rpcs 4695.078 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Raft ...
+  ... Finished --  126132 ms 5 servers 13920 rpcs 4686.419 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  761690 ms 5 servers 44719 rpcs 6769.204 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  13725 ms 5 servers 10000 rpcs 6188.686 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  27860 ms 5 servers 26260 rpcs 4662.438 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Raft ...
+  ... Finished --  61559 ms 5 servers 13681 rpcs 5208.536 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  696492 ms 5 servers 47753 rpcs 7108.742 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  5837 ms 5 servers 10000 rpcs 8638.017 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  14142 ms 5 servers 26140 rpcs 4649.057 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Raft ...
+  ... Finished --  32740 ms 5 servers 13511 rpcs 6177.245 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  443858 ms 5 servers 45462 rpcs 6984.340 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  2704 ms 5 servers 10004 rpcs 12633.394 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  7149 ms 5 servers 26060 rpcs 4640.217 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Raft ...
+  ... Finished --  19625 ms 5 servers 13544 rpcs 7953.294 KB
+
+Round 2
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  259822 ms 5 servers 43847 rpcs 6857.172 KB
+
+Round 2
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  90636 ms 5 servers 30031 rpcs 22564.350 KB
+
+Round 2
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  163058 ms 5 servers 78976 rpcs 18711.641 KB
+
+Round 2
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  77697 ms 5 servers 54808 rpcs 58353.520 KB
+
+Round 2
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  152296 ms 5 servers 145567 rpcs 34924.531 KB
+
+Round 2
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  66754 ms 5 servers 105013 rpcs 171507.016 KB
+
+Round 2
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  146508 ms 5 servers 273659 rpcs 65912.312 KB
+
+Round 2
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  57792 ms 5 servers 206677 rpcs 550929.500 KB
+
+Round 2
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  145100 ms 5 servers 532927 rpcs 128727.422 KB
+
+Round 3
+one client sequential servers: 3 reliable, no long delay protocol: Raft ...
+  ... Finished --  132223 ms 3 servers  6000 rpcs 2320.960 KB
+
+Round 3
+one client sequential servers: 3 reliable, no long delay protocol: Paxos ...
+  ... Finished --  279444 ms 3 servers 14834 rpcs 3256.236 KB
+
+Round 3
+one client sequential servers: 3 reliable, long delay protocol: Raft ...
+  ... Finished --  779237 ms 3 servers  9176 rpcs 3442.563 KB
+
+Round 3
+one client sequential servers: 3 reliable, long delay protocol: Paxos ...
+  ... Finished --  1219572 ms 3 servers 17642 rpcs 3472.188 KB
+
+Round 3
+one client sequential servers: 5 reliable, no long delay protocol: Raft ...
+  ... Finished --  136194 ms 5 servers 10000 rpcs 4215.645 KB
+
+Round 3
+one client sequential servers: 5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  282125 ms 5 servers 28800 rpcs 6199.844 KB
+
+Round 3
+one client sequential servers: 5 reliable, long delay protocol: Raft ...
+  ... Finished --  817209 ms 5 servers 16924 rpcs 6588.744 KB
+
+Round 3
+one client sequential servers: 5 reliable, long delay protocol: Paxos ...
+  ... Finished --  1298448 ms 5 servers 38940 rpcs 7033.621 KB
+
+Round 3
+one client sequential servers: 7 reliable, no long delay protocol: Raft ...
+  ... Finished --  136201 ms 7 servers 14000 rpcs 6114.567 KB
+
+Round 3
+one client sequential servers: 7 reliable, no long delay protocol: Paxos ...
+  ... Finished --  281451 ms 7 servers 43880 rpcs 9241.379 KB
+
+Round 3
+one client sequential servers: 7 reliable, long delay protocol: Raft ...
+  ... Finished --  829928 ms 7 servers 24758 rpcs 9776.548 KB
+
+Round 3
+one client sequential servers: 7 reliable, long delay protocol: Paxos ...
+  ... Finished --  1331787 ms 7 servers 65846 rpcs 11087.828 KB
+
+Round 3
+one client sequential servers: 9 reliable, no long delay protocol: Raft ...
+  ... Finished --  136499 ms 9 servers 18000 rpcs 8015.390 KB
+
+Round 3
+one client sequential servers: 9 reliable, no long delay protocol: Paxos ...
+  ... Finished --  276236 ms 9 servers 59864 rpcs 12362.266 KB
+
+Round 3
+one client sequential servers: 9 reliable, long delay protocol: Raft ...
+  ... Finished --  843468 ms 9 servers 32328 rpcs 12859.435 KB
+
+Round 3
+one client sequential servers: 9 reliable, long delay protocol: Paxos ...
+  ... Finished --  1345897 ms 9 servers 98312 rpcs 15629.644 KB
+
+Round 3
+one client sequential servers: 11 reliable, no long delay protocol: Raft ...
+  ... Finished --  136324 ms 11 servers 22000 rpcs 9939.818 KB
+
+Round 3
+one client sequential servers: 11 reliable, no long delay protocol: Paxos ...
+  ... Finished --  276833 ms 11 servers 77070 rpcs 15631.312 KB
+
+Round 3
+one client sequential servers: 11 reliable, long delay protocol: Raft ...
+  ... Finished --  843221 ms 11 servers 39949 rpcs 15976.921 KB
+
+Round 3
+one client sequential servers: 11 reliable, long delay protocol: Paxos ...
+  ... Finished --  1364300 ms 11 servers 136800 rpcs 20735.053 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  30936 ms 5 servers 10000 rpcs 4882.437 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  54681 ms 5 servers 26540 rpcs 4694.922 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Raft ...
+  ... Finished --  129067 ms 5 servers 14286 rpcs 4811.848 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:5 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  769851 ms 5 servers 44154 rpcs 6660.974 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  13907 ms 5 servers 10000 rpcs 6172.985 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  27717 ms 5 servers 26260 rpcs 4662.461 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Raft ...
+  ... Finished --  62351 ms 5 servers 13679 rpcs 5192.099 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:10 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  613585 ms 5 servers 43934 rpcs 6710.898 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  5886 ms 5 servers 10004 rpcs 8498.479 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  14108 ms 5 servers 26140 rpcs 4649.096 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Raft ...
+  ... Finished --  35746 ms 5 servers 13564 rpcs 6081.367 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:20 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  448302 ms 5 servers 44031 rpcs 6745.271 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  2724 ms 5 servers 10004 rpcs 12347.717 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  7207 ms 5 servers 26060 rpcs 4640.232 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Raft ...
+  ... Finished --  23480 ms 5 servers 13698 rpcs 7546.585 KB
+
+Round 3
+many clients parallel no contend servers: 5, clients:40 unreliable, no long delay protocol: Paxos ...
+  ... Finished --  270819 ms 5 servers 46494 rpcs 7175.194 KB
+
+Round 3
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Raft ...
+  ... Finished --  91552 ms 5 servers 30131 rpcs 22506.682 KB
+
+Round 3
+many clients contend servers: 5, clients:5 reliable, no long delay protocol: Paxos ...
+  ... Finished --  164591 ms 5 servers 79872 rpcs 18922.666 KB
+
+Round 3
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Raft ...
+  ... Finished --  77290 ms 5 servers 55029 rpcs 58847.348 KB
+
+Round 3
+many clients contend servers: 5, clients:10 reliable, no long delay protocol: Paxos ...
+  ... Finished --  152221 ms 5 servers 144954 rpcs 34777.062 KB
+
+Round 3
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Raft ...
+  ... Finished --  67083 ms 5 servers 105596 rpcs 172025.578 KB
+
+Round 3
+many clients contend servers: 5, clients:20 reliable, no long delay protocol: Paxos ...
+  ... Finished --  145426 ms 5 servers 272796 rpcs 65709.352 KB
+
+Round 3
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Raft ...
+  ... Finished --  57343 ms 5 servers 204564 rpcs 543613.625 KB
+
+Round 3
+many clients contend servers: 5, clients:40 reliable, no long delay protocol: Paxos ...
+  ... Finished --  144964 ms 5 servers 535528 rpcs 129358.172 KB
+
+Round 4
+one client sequential servers: 3 reliable, no long delay protocol: Raft ...
+  ... Finished --  132664 ms 3 servers  6000 rpcs 2317.164 KB
+
+Round 4
+one client sequential servers: 3 reliable, no long delay protocol: Paxos ...
+  ... Finished --  279551 ms 3 servers 14834 rpcs 3256.195 KB
+
+Round 4
+one client sequential servers: 3 reliable, long delay protocol: Raft ...
+  ... Finished --  772710 ms 3 servers  9108 rpcs 3419.579 KB
+
+Round 4
+one client sequential servers: 3 reliable, long delay protocol: Paxos ...

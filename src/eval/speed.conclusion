@@ -1,0 +1,33 @@
+单client串行： 可以做双柱状图，左轴是完成时间，右轴是ops
+			raft的网络开销：client to server : 1 rpc, leader to follower: 1rpc 总等待时间 2rpcs
+			paxos的网络开销：client to server : 1 rpc, proposer : propose, accept (此时server可以回复client) decide， 总等待时间 3rpcs
+
+			paxos额外的开销：raft可以在达成一致后通知server，立即返回给客户端，但paxos依赖于server定期向paxos询问是否有达成一致（不能过于频繁地询问）所以查询的间隔时间是对比raft来说的额外开销
+
+			short delay时 raft的ops约是paxos的两倍（综合两个原因）
+			long delay时，网络开销的因素被放大，ops趋向于1.5倍
+
+			当server数增多时，raft中leader向follower发消息是并行的（paxos的propose和accept同理），所以增加的完成时间不算多，但由于本身是随机延迟，我们需要等到至少一半的请求完成，导致完成时间有增加。
+			每个server本身是并行的，所以主要的开销就是网络通信（long delay在server增多时导致的完成时间的增加更大）
+
+多client并行：
+            对于reliable的network，raft和paxos都可以并发地同步多个请求（CPU不是瓶颈），所以scale的表现都很好（客户端数量*2，完成时间*0.5）
+
+			raft可以将多个请求合并在一次rpc中全部同步，所以当client数量较多时，性能提升更为明显。
+			在单client串行中提到的查询导致的paxos的额外开销，由于我们需要保证所有的操作按照相同的顺序，所以即使靠后的操作同步完成了也需要等待前面的操作完成（这部分开销不能通过并行缩减）所以paxos的提升不到2倍。
+
+			在unreliable的network中，对于raft来说，如果leader回复client的rpc超时，可能导致client重新轮询leader（额外开销）导致并行带来的提升变小（未来可行的optimization，直接在回复中告知当前的leader）
+
+			unreliable对于paxos的影响更大，不同于raft可能合并多个请求（即使前面的请求drop了，如果后面的请求成功了就没有影响），paxos还是需要对于每个请求进行单独的决议，同时在propose，accept和decide的任何一个阶段的请求drop都有可能造成本次决议失败。
+			同时如果一个server，accept了之后却没有收到decide（可能是accept的回复drop了或者时decide的请求drop了）会导致这个server之后重新propose（为应对当前proposer fail的情况）从而导致更多的竞争。
+			而且目前实现的paxos并没有一个真正的leader（大家倾向于向同一个server发请求，把他当成leader，但把请求发给别的server，别的server也不会拒绝），由于client和server之间的请求会drop，client会认为之前的leader挂掉了，向别的server发请求，导致每个client prefer的server不同，造成更多的竞争。（Chubby有提到即使使用paxos协议，也应该指定一个leader，这是其中一个原因，也是我们未来可行的optimization）
+
+多client竞争：
+			随着client数的增加，ops的提升比较marginal，毕竟每一次只有一个client能够获取锁，提升是由于处理了一个release请求的同时，刚好有另一个acquire请求到达，可以直接完成acquire请求（并行了acquire请求的发送和另一个client release请求的回复，节约了一些网络传输的时间）
+
+			相比于单客户端串行，paxos的提升时间：约为50%，并行了两个client和server的通信和server之间决议的各两个rpc。
+			raft的提升更为明显，因为请求十分密集，有很大的概率触发多个请求在一次server同步中完成，大幅节约server之间通信的开销
+
+结论：
+Raft本来的强leader，以整个log作为单位进行同步的性质更契合目前这种实现的lock service
+原生的单点paxos并不适合，所以google对其进行了改进，引入了包括leader等机制，使其更适合chubby，并将chubby定位为一个coarse-grained的lock service，意味着系统的整体负载不会太大，使得paxos本身的性能开销不会成为瓶颈
