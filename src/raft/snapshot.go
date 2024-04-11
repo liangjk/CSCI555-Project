@@ -18,7 +18,7 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	newLogs := []Log{{Term: rf.logs[discardIndex].Term}}
 	rf.logs = append(newLogs, rf.logs[discardIndex+1:]...)
 	rf.snapshot = snapshot
-	rf.persistL()
+	rf.persistL(false)
 }
 
 func (rf *Raft) sendSnapshot(peer, term, mIndex int, args *InstallSnapshotArgs) {
@@ -89,5 +89,5 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	rf.lastApplied = args.LastIndex + 1
 	rf.snapshotApplying = true
 	rf.applyCond.Signal()
-	rf.persistL()
+	rf.persistL(false)
 }

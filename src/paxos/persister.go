@@ -91,8 +91,8 @@ func (px *Paxos) readPersist(ps *Persister) {
 	}
 }
 
-func (px *Paxos) persistL() {
-	if px.persister.enable {
+func (px *Paxos) persistL(force bool) {
+	if px.persister.enable || force {
 		pinsts := make([]PersistInstance, len(px.instances))
 		for _, inst := range px.instances {
 			inst.mu.Lock()

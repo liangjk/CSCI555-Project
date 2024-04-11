@@ -13,8 +13,8 @@ import (
 // second argument to persister.Save().
 // after you've implemented snapshots, pass the current snapshot
 // (or nil if there's not yet a snapshot).
-func (rf *Raft) persistL() {
-	if rf.persister.enable {
+func (rf *Raft) persistL(force bool) {
+	if rf.persister.enable || force {
 		w := new(bytes.Buffer)
 		e := labgob.NewEncoder(w)
 		e.Encode(rf.currentTerm)
@@ -28,6 +28,12 @@ func (rf *Raft) persistL() {
 			rf.persister.Save(raftstate, nil)
 		}
 	}
+}
+
+func (rf *Raft) Persist() {
+	rf.mu.Lock()
+	rf.persistL(true)
+	rf.mu.Unlock()
 }
 
 // restore previously persisted state.

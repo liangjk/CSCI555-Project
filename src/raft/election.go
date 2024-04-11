@@ -48,7 +48,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.votedFor = args.CandidateId
 	reply.Granted = true
 	atomic.StoreInt32(&rf.missedHeartbeat, 0)
-	rf.persistL()
+	rf.persistL(false)
 }
 
 func (rf *Raft) startElection() {

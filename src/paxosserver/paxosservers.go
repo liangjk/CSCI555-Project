@@ -28,15 +28,16 @@ func (srvs *PaxosServers) Kill() {
 }
 
 func (srvs *PaxosServers) Shutdown(i int, mu *sync.Mutex) {
-	if srvs.saved[i] != nil {
-		srvs.saved[i] = srvs.saved[i].Copy()
-	}
 	srv := srvs.servers[i]
 	if srv != nil {
 		mu.Unlock()
+		srv.px.Persist()
 		srv.Kill()
 		mu.Lock()
 		srvs.servers[i] = nil
+	}
+	if srvs.saved[i] != nil {
+		srvs.saved[i] = srvs.saved[i].Copy()
 	}
 	if srvs.leader == i {
 		srvs.leader++

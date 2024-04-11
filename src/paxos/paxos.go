@@ -144,6 +144,12 @@ func (px *Paxos) Kill() {
 	atomic.StoreInt32(&px.dead, 1)
 }
 
+func (px *Paxos) Persist() {
+	px.mu.Lock()
+	px.persistL(true)
+	px.mu.Unlock()
+}
+
 // has this peer been asked to shut down?
 func (px *Paxos) isdead() bool {
 	return atomic.LoadInt32(&px.dead) != 0

@@ -119,7 +119,7 @@ func (rf *Raft) Start(command interface{}) (index int, term int, isLeader bool) 
 	index = rf.startIndex + len(rf.logs)
 	isLeader = true
 	rf.logs = append(rf.logs, Log{term, command})
-	rf.persistL()
+	rf.persistL(false)
 	if rf.newOp == 0 {
 		rf.newOp = index
 		rf.commitCond.Broadcast()

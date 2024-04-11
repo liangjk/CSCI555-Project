@@ -63,7 +63,7 @@ func (px *Paxos) ticker() {
 			px.instances = make([]*Instance, len(instances))
 			copy(px.instances, instances)
 			px.startIndex = done
-			px.persistL()
+			px.persistL(false)
 		}
 		if replyDecided > px.decided {
 			px.getInstanceL(replyDecided, true)

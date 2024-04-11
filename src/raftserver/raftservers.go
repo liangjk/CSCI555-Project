@@ -27,14 +27,15 @@ func (srvs *RaftServers) Kill() {
 }
 
 func (srvs *RaftServers) Shutdown(i int, mu *sync.Mutex) {
-	if srvs.saved[i] != nil {
-		srvs.saved[i] = srvs.saved[i].Copy()
-	}
 	srv := srvs.servers[i]
 	if srv != nil {
 		mu.Unlock()
+		srv.rf.Persist()
 		srv.Kill()
 		mu.Lock()
+	}
+	if srvs.saved[i] != nil {
+		srvs.saved[i] = srvs.saved[i].Copy()
 	}
 	srvs.servers[i] = nil
 }
