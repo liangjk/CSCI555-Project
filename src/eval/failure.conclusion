@@ -1,0 +1,39 @@
+setting: 没隔1S统计一下这期间完成的ops（acquire和release算两个op）
+parallel：5个server，20个客户端，每个客户端获取自己的锁然后释放掉（1000次），没有竞争
+contend：5个server，20个客户端，所有客户端尝试获取同一个锁，成功获取的那个客户端获取后释放，（总计成功获取1000次）
+
+leader failure：每隔12s，shutdown掉当时的leader，同时重启上次shutdown的server（除前12s外，同时有4个server运行）
+nonleader failure：以12s为周期，每隔3s关掉一个server，然后下个12s周期，每隔3s重启一个server，leader始终运行
+random failure：每隔3s随机一个server（可能是leader也可能不是）shutdown掉，同时重启上次shutdown的server
+
+parallel：进行了no failure的baseline测试，leader failure和nonleader Failure
+	no failure：
+		开始时ops较高（raft更明显）因为此时所有的客户端基本是同时发送请求，raft能够更好地batch需要同步的操作，ops比较高，但随着测试的进行，所有客户端会错开发送的时间（平均分布），所以ops下降并维持稳定
+		末尾ops下降，一些客户端已经完成了自己的1000次操作退出后，并行的client数减少，ops下降
+	leader failure：
+		能够清楚地发现每隔12s，leader crash之后需要等待新leader产生才能继续进行操作，同时即使关掉的server 12s之后才会重启，但failover能够正确地选出新的leader并在4台server的状态下继续进行。
+
+		新leader产生后，raft的ops会短暂地超过没有failure时的平均ops，原因还是在leader failure的过程中，虽然有些操作没有完成，但其实已经和一些server进行了同步（进行了一部分），所以当新leader产生后，完成这些half-way的操作会更快。另外就是batch的影响。（raft更明显）
+
+		paxos在leader挂掉之后需要的恢复时间更长，虽然paxos没有一个确定的leader，但为了避免竞争，每个acceptor会倾向于由proposer（也就是发起这个操作的server，当时的leader）进行decide，只有在accpet之后很长时间没有decide才会重新进行propose。
+		同时为了确保操作的顺序进行，必须保证前面的所有操作都decide之后才能进行新操作，而前面的每个操作都是独立的，有独立的等待时间。而raft在选举出新leader后会由新leader batch所有故障期间的操作并一次性同步给所有follower。
+	non leader failure：
+		只有1个和2个server挂掉的时候操作能够正常进行，但ops略有下降，因为之前是4个follower中最快的两个回复了就可以decide，但现在需要等仅剩的两个全部回复才能decide。
+
+		当有3个或者4个server挂掉的时候，由于无法达成majority，操作无法进行。
+
+		当重启挂掉的第4个server时，会有很少的几个ops，这是因为虽然此时只有2个server活着，但可能有一些操作，在其它server挂掉之前已经同步给了它们，但当时没有达成majority，此时第4个server重启，加上它达成了majority，所以能够进行，但此时还是只有两个alive的server，不能进行新的操作。
+
+		paxos在这项测试中的表现很糟糕，还是因为需要更多的时间来使follower catchup上leader最新的操作（每个操作独立进行），同时每个follower重启后都会向广播寻找leader（raft是等待当前的leader通知），产生更多的竞争，性能进一步下降
+
+contend：进行了no failure的baseline测试，leader failure和random failure
+	leader failure：
+		能够正确地进行failover，即使所有的客户端都有竞争，但failure不会产生锁的丢失或者同时被多个客户端获取
+	random failure：
+		只有leader crash的时候会产生明显的影响，而non leader的crash由于不会导致无法达成majority，所以不会对性能产生较大的影响
+
+结论：raft和paxos都能够在少数server crash的情况下自行恢复并继续运行。但paxos受到server crash的影响更大一些，raft在新leader产生后能够使用batch的机制快速的catchup。同时在恢复过程中，由于raft有一个leader来负责recovery，而paxos需要recovering的server在peer间进行广播，有更多的竞争，所以raft恢复地更快。需要再次强调的是，chubby使用的是改进后的paxos，同时在实际的生产环境中，server的crash是一个相对小概率发生的事件。
+
+client crash：所有客户端都尝试acquire同一把锁，在获取锁之后，release之前，会立刻crash
+	总共成功获取100次后退出
+	耗时大概在180秒左右，在12s的lease过后有6s的grace period，在18s过后，server会收回这把锁，并给其它的client，不会因为client的crash而导致死锁。
