@@ -56,7 +56,7 @@ func clientFailureTest(cfg *Config, testname string) {
 }
 
 func clientFailure(run int) {
-	testname := "Round " + strconv.Itoa(run) + " client failure, reliabl, no long delay,"
+	testname := "Round " + strconv.Itoa(run) + "\nclient failure servers: 5 clients: 20, reliable no long delay,"
 	rfcfg := MakeConfig(5, false, false, false, session.Raft)
 	clientFailureTest(rfcfg, testname+" protocol: Raft")
 	rfcfg.Cleanup()

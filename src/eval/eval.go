@@ -8,8 +8,7 @@ func main() {
 		// manyClientSpeed(i)
 		// manyClientContend(i)
 		clientFailure(i)
-		// leaderFailure(i)
-		// nonleaderFailure(i)
-		// randomFailure(i)
+		failureParallel(i)
+		failureContend(i)
 	}
 }
