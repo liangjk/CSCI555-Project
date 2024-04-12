@@ -2,7 +2,6 @@ package main
 
 import (
 	"CSCI555Project/session"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -62,8 +61,8 @@ func failureContendTest(cfg *Config, testname string, failure func(time.Duration
 	println("*\n" + testname)
 }
 
-func failureContend(run int) {
-	testname := "Round " + strconv.Itoa(run) + "\nfailure ops contend servers: 5 clients: 20, reliable no long dealy,"
+func failureContend() {
+	testname := "Failure ops contend servers: 5 clients: 20, reliable no long dealy,"
 
 	failuresetting := " no failure (baseline)"
 	rfcfg := MakeConfig(5, false, false, false, session.Raft)

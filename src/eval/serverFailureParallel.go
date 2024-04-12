@@ -54,8 +54,8 @@ func failureParallelTest(cfg *Config, testname string, failure func(time.Duratio
 	println("*\n" + testname)
 }
 
-func failureParallel(run int) {
-	testname := "Round " + strconv.Itoa(run) + "\nfailure ops parallel servers: 5 clients: 20, reliable no long dealy,"
+func failureParallel() {
+	testname := "Failure ops parallel servers: 5 clients: 20, reliable no long dealy,"
 
 	failuresetting := " no failure (baseline)"
 	rfcfg := MakeConfig(5, false, false, false, session.Raft)
