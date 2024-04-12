@@ -4,15 +4,12 @@ import (
 	"CSCI555Project/session"
 	"strconv"
 	"sync"
-	"time"
 )
 
 func failureParallelTest(cfg *Config, testname string, failure func(*Config, chan bool)) {
 	const (
-		ops        = 1000
-		clt        = 20
-		statperiod = time.Millisecond * 1000
-		failperiod = time.Second * 10
+		ops = 1000
+		clt = 20
 	)
 	sess := make([]*session.Session, clt)
 	path := "failureParallel/" + testname
