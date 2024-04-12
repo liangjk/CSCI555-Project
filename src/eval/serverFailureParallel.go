@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func failureParallelTest(cfg *Config, testname string, failure func(time.Duration, *Config, chan bool)) {
+func failureParallelTest(cfg *Config, testname string, failure func(*Config, chan bool)) {
 	const (
 		ops        = 1000
 		clt        = 20
@@ -25,8 +25,8 @@ func failureParallelTest(cfg *Config, testname string, failure func(time.Duratio
 	wg := sync.WaitGroup{}
 	wg.Add(clt)
 	cfg.begin(testname)
-	go failure(failperiod, cfg, doneCh)
-	go stastic(statperiod, ch, doneCh)
+	go failure(cfg, doneCh)
+	go stastic(ch, doneCh)
 	for i := 0; i < clt; i++ {
 		id := i
 		go func() {

@@ -6,21 +6,26 @@ import (
 	"time"
 )
 
-func noFailure(period time.Duration, cfg *Config, doneCh chan bool) {
-	timer := time.NewTimer(period)
+const (
+	statperiod = time.Millisecond * 1000
+	failperiod = time.Second * 3
+)
+
+func noFailure(cfg *Config, doneCh chan bool) {
+	timer := time.NewTimer(failperiod)
 	for {
 		select {
 		case <-doneCh:
 			timer.Stop()
 			return
 		case <-timer.C:
-			timer.Reset(period)
+			timer.Reset(failperiod)
 		}
 	}
 }
 
-func periodicalLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
-	timer := time.NewTimer(period)
+func periodicalLeaderFail(cfg *Config, doneCh chan bool) {
+	timer := time.NewTimer(failperiod * 4)
 	id := -1
 	for {
 		select {
@@ -28,7 +33,7 @@ func periodicalLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
 			timer.Stop()
 			return
 		case <-timer.C:
-			timer.Reset(period)
+			timer.Reset(failperiod * 4)
 			if id >= 0 {
 				cfg.StartServer(id)
 				cfg.Connect(id, cfg.All())
@@ -39,7 +44,7 @@ func periodicalLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
 	}
 }
 
-func nonLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
+func nonLeaderFail(cfg *Config, doneCh chan bool) {
 	ld := cfg.Leader()
 	srvs := make([]int, 0)
 	for i := 0; i < 5; i++ {
@@ -47,7 +52,7 @@ func nonLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
 			srvs = append(srvs, i)
 		}
 	}
-	timer := time.NewTimer(period / 2)
+	timer := time.NewTimer(failperiod)
 	updown := false
 	id := 0
 	for {
@@ -56,7 +61,7 @@ func nonLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
 			timer.Stop()
 			return
 		case <-timer.C:
-			timer.Reset(period / 2)
+			timer.Reset(failperiod)
 			if updown {
 				cfg.StartServer(srvs[id])
 				cfg.Connect(srvs[id], cfg.All())
@@ -72,8 +77,8 @@ func nonLeaderFail(period time.Duration, cfg *Config, doneCh chan bool) {
 	}
 }
 
-func randomFail(period time.Duration, cfg *Config, doneCh chan bool) {
-	timer := time.NewTimer(period / 4)
+func randomFail(cfg *Config, doneCh chan bool) {
+	timer := time.NewTimer(failperiod)
 	id := -1
 	for {
 		select {
@@ -81,7 +86,7 @@ func randomFail(period time.Duration, cfg *Config, doneCh chan bool) {
 			timer.Stop()
 			return
 		case <-timer.C:
-			timer.Reset(period / 4)
+			timer.Reset(failperiod)
 			if id >= 0 {
 				cfg.StartServer(id)
 				cfg.Connect(id, cfg.All())
@@ -92,8 +97,8 @@ func randomFail(period time.Duration, cfg *Config, doneCh chan bool) {
 	}
 }
 
-func stastic(period time.Duration, opCh, doneCh chan bool) {
-	timer := time.NewTimer(period)
+func stastic(opCh, doneCh chan bool) {
+	timer := time.NewTimer(statperiod)
 	cnt := 0
 	for {
 		select {
@@ -103,7 +108,7 @@ func stastic(period time.Duration, opCh, doneCh chan bool) {
 		case <-opCh:
 			cnt++
 		case <-timer.C:
-			timer.Reset(period)
+			timer.Reset(statperiod)
 			fmt.Printf("Timestamp: %v, ops since last stamp: %v\n", time.Now(), cnt)
 			cnt = 0
 		}

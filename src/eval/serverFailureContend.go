@@ -3,15 +3,12 @@ package main
 import (
 	"CSCI555Project/session"
 	"sync"
-	"time"
 )
 
-func failureContendTest(cfg *Config, testname string, failure func(time.Duration, *Config, chan bool)) {
+func failureContendTest(cfg *Config, testname string, failure func(*Config, chan bool)) {
 	const (
-		ops        = 1000
-		clt        = 20
-		statperiod = time.Millisecond * 1000
-		failperiod = time.Second * 10
+		ops = 1000
+		clt = 20
 	)
 	sess := make([]*session.Session, clt)
 	path := "failureParallel/" + testname
@@ -25,8 +22,8 @@ func failureContendTest(cfg *Config, testname string, failure func(time.Duration
 	wg := sync.WaitGroup{}
 	wg.Add(clt)
 	cfg.begin(testname)
-	go failure(failperiod, cfg, doneCh)
-	go stastic(statperiod, ch, doneCh)
+	go failure(cfg, doneCh)
+	go stastic(ch, doneCh)
 	for i := 0; i < clt; i++ {
 		id := i
 		go func() {
